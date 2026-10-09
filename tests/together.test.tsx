@@ -25,6 +25,11 @@ const mountBand = ($: Engine) => $.ui.mount({ plugin: 'together', surface: 'term
 
 type Found = { text?: string; props?: object }
 const textsOf = async (ui: { findAll: (q: { type: 'Text' }) => Promise<Found[]> }) => (await ui.findAll({ type: 'Text' })).map(found => found.text ?? '')
+const labelsOf = async (ui: { findAll: (q: { type: 'Button' }) => Promise<Found[]> }) =>
+  (await ui.findAll({ type: 'Button' })).map(found => {
+    const props: object = found.props ?? {}
+    return 'label' in props ? String(props.label) : ''
+  })
 const textOf = async (ui: { findAll: (q: { type: 'Text' }) => Promise<Found[]> }) => (await textsOf(ui)).join('\n')
 const colorOf = async (ui: { findAll: (q: { type: 'Text' }) => Promise<Found[]> }, pattern: RegExp) => {
   const found = (await ui.findAll({ type: 'Text' })).find(text => pattern.test(text.text ?? ''))
@@ -71,12 +76,14 @@ describe('pane', () => {
     world(on, filesOf('emma-launch'))
     await start($)
     await run($, 'emma-launch')
-    const shown = await textOf(await mountPane($))
-    for (const part of ['◑ emma launch', '⚑ 12d', '▕', '7/14', '✦ today', '○ Buy domain', '◐ Update site to v3', '╶─ outreach', '2/4 ╴', '○ Shortlist 10 companies', '◷ waiting', '◷ neil · Pricing changes', '4d', '7 done', 'thoughts/lists/emma-launch.md']) {
+    const pane = await mountPane($)
+    const shown = await textOf(pane)
+    for (const part of ['◑ emma launch', '⚑ 12d', '▕', '7/14', '✦ today', '○ Buy domain', '◐ Update site to v3', '╶─   admin', '○ Shortlist 10 companies', '◷ waiting', '◷ neil · Pricing changes', '4d', '7 done', 'thoughts/lists/emma-launch.md']) {
       expect(shown).toContain(part)
     }
+    expect((await labelsOf(pane)).join('\n')).toContain('╶─ ▾ outreach')
+    expect((await labelsOf(pane)).join('\n')).toContain('2/4 ╴')
     expect(shown).not.toContain('Set up Stripe account')
-    expect(shown).not.toContain('╶─ admin')
   })
 
   test('AC3: doing is cyan, overdue red, stale waiting yellow', async ($, on) => {
@@ -97,11 +104,12 @@ describe('pane', () => {
     world(on, filesOf('emma-launch', 'otp-outreach', 'q4-taxes'))
     await start($)
     await run($, 'emma-launch')
-    const shown = await textsOf(await mountPane($))
+    const pane = await mountPane($)
+    const shown = await textsOf(pane)
     expect(shown).toContain('✦ 4 today · ◷ 4 waiting')
-    expect(shown).toContain('◑ otp outreach')
+    expect(await labelsOf(pane)).toContain('◑ otp outreach')
     expect(shown).toContain('3/6')
-    expect(shown).toContain('○ q4 taxes')
+    expect(await labelsOf(pane)).toContain('○ q4 taxes')
     expect(shown).toContain('0/4 ⚑ oct 31')
   })
 
@@ -109,9 +117,10 @@ describe('pane', () => {
     mock.clock(on, { now: NOW })
     world(on, filesOf('emma-launch', 'q4-taxes', 'otp-outreach'))
     await start($)
-    const shown = await textOf(await mountPane($))
+    const pane = await mountPane($)
+    const shown = await textOf(pane)
     expect(shown).toContain('thoughts/lists/otp-outreach.md')
-    expect(shown).toContain('○ q4 taxes')
+    expect(await labelsOf(pane)).toContain('○ q4 taxes')
     expect(shown).not.toContain('thoughts/lists/q4-taxes.md')
   })
 
@@ -127,7 +136,8 @@ describe('pane', () => {
     world(on, filesOf('emma-launch', 'otp-outreach'))
     await start($)
     await run($, 'emma-launch')
-    const lines = (await textsOf(await mountPane($, 36))).filter(text => /[─▕░█]/u.test(text))
+    const pane = await mountPane($, 36)
+    const lines = [...(await textsOf(pane)), ...(await labelsOf(pane))].filter(text => /[─▕░█]/u.test(text))
     expect(lines.length).toBeGreaterThan(2)
     for (const line of lines) expect(line.length).toBeLessThanOrEqual(36 - 4)
   })
@@ -145,6 +155,36 @@ describe('pane', () => {
     const shown = await textOf(pane)
     expect(shown).not.toMatch(SPINNER)
     expect(shown).toContain('◐ Update site to v3')
+  })
+})
+
+describe('pressing', () => {
+  test('a list in the overview becomes the active one', async ($, on) => {
+    mock.clock(on, { now: NOW })
+    world(on, filesOf('emma-launch', 'q4-taxes'))
+    await start($)
+    await run($, 'emma-launch')
+    const pane = await mountPane($)
+    await pane.press({ key: `list:${listPath('q4-taxes')}` })
+    const shown = await textOf(pane)
+    expect(shown).toContain('thoughts/lists/q4-taxes.md')
+    expect(await labelsOf(pane)).toContain('◑ emma launch')
+  })
+
+  test('a heading folds and unfolds its items, per list', async ($, on) => {
+    mock.clock(on, { now: NOW })
+    world(on, filesOf('emma-launch', 'q4-taxes'))
+    await start($)
+    await run($, 'emma-launch')
+    const pane = await mountPane($)
+    await pane.press({ key: 'fold:Outreach' })
+    expect(await textOf(pane)).not.toContain('Shortlist 10 companies')
+    expect((await labelsOf(pane)).join('\n')).toContain('╶─ ▸ outreach')
+    await run($, 'q4-taxes')
+    await run($, 'emma-launch')
+    expect(await textOf(pane)).not.toContain('Shortlist 10 companies')
+    await pane.press({ key: 'fold:Outreach' })
+    expect(await textOf(pane)).toContain('Shortlist 10 companies')
   })
 })
 

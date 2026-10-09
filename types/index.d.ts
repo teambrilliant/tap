@@ -7,6 +7,7 @@ declare module 'claude-code' {
       lists: ListFile[]
       isWorking: boolean
       frame: number
+      folded: { path: string; heading: string }[]
       hasOpened: boolean
     }
   }

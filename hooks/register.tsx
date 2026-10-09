@@ -16,6 +16,7 @@ const lists = atom({ plugin: 'together', key: 'lists' }, [])
 const isWorking = atom({ plugin: 'together', key: 'isWorking' }, false)
 const frame = atom({ plugin: 'together', key: 'frame' }, 0)
 const hasOpened = atom({ plugin: 'together', key: 'hasOpened' }, false)
+const folded = atom({ plugin: 'together', key: 'folded' }, [])
 
 async function absolute($: EngineInterface, path: string): Promise<string> {
   return path.startsWith('/') ? path : `${await $.session.root()}/${path}`
@@ -91,11 +92,11 @@ export const register: Register = on => {
       }
       await update($, activeList, () => path)
       await update($, hasOpened, () => true)
-      await $.ui.open({ id: PANE, title: PANE })
+      await $.ui.open({ id: PANE, title: PANE, focus: true })
       return { text: `together: ${slug}` }
     }
     await update($, hasOpened, () => true)
-    await $.ui.open({ id: PANE, title: PANE })
+    await $.ui.open({ id: PANE, title: PANE, focus: true })
     return { text: 'together: pane open.' }
   })
 
@@ -153,8 +154,15 @@ export const register: Register = on => {
             columns,
             frame: active.summary.doing === null ? 0 : await read($, frame),
             isWorking: await read($, isWorking),
+            folded: (await read($, folded)).filter(fold => fold.path === active.file.path).map(fold => fold.heading),
+            onToggle: heading =>
+              void update($, folded, current =>
+                current.some(fold => fold.path === active.file.path && fold.heading === heading)
+                  ? current.filter(fold => !(fold.path === active.file.path && fold.heading === heading))
+                  : [...current, { path: active.file.path, heading }],
+              ),
           })}
-        {Overview({ kit, entries, activePath: active?.file.path ?? null, columns })}
+        {Overview({ kit, entries, activePath: active?.file.path ?? null, columns, onOpen: path => void update($, activeList, () => path) })}
       </Box>
     )
   })

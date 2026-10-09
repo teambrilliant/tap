@@ -1,10 +1,10 @@
-import type { BoxProps, ElementConstructor, TextProps } from 'claude-code'
+import type { BoxProps, ButtonProps, ElementConstructor, TextProps } from 'claude-code'
 
 import type { ListFile } from '../types'
 import { isWaiting } from './list'
 import type { Item, List, Owner, Summary } from './list'
 
-export type Kit = { Box: ElementConstructor<BoxProps>; Text: ElementConstructor<TextProps> }
+export type Kit = { Box: ElementConstructor<BoxProps>; Text: ElementConstructor<TextProps>; Button: ElementConstructor<ButtonProps> }
 
 type Color = 'cyan' | 'red' | 'yellow'
 
@@ -51,11 +51,21 @@ function Row({ kit, glyph, text, right, width, color, isDim }: { kit: Kit; glyph
   )
 }
 
-export type ListPaneProps = { kit: Kit; list: List; summary: Summary; path: string; columns: number; frame: number; isWorking: boolean }
+export type ListPaneProps = {
+  kit: Kit
+  list: List
+  summary: Summary
+  path: string
+  columns: number
+  frame: number
+  isWorking: boolean
+  folded: readonly string[]
+  onToggle: (heading: string) => void
+}
 
-/** The active list as a card: header, progress, today, headings with what's left, waiting, done count. */
-export function ListPane({ kit, list, summary, path, columns, frame, isWorking }: ListPaneProps) {
-  const { Box, Text } = kit
+/** The active list as a card: header, progress, today, every heading with what's left (foldable), waiting, done count. */
+export function ListPane({ kit, list, summary, path, columns, frame, isWorking, folded, onToggle }: ListPaneProps) {
+  const { Box, Text, Button } = kit
   const width = Math.max(16, columns - FRAME)
   const isOverdue = (item: Item) => summary.overdue.includes(item)
   const itemRow = (item: Item) => {
@@ -68,9 +78,10 @@ export function ListPane({ kit, list, summary, path, columns, frame, isWorking }
   const deadlineColor: Color | undefined = summary.daysLeft !== null && summary.daysLeft < 0 ? 'red' : summary.daysLeft !== null && summary.daysLeft <= 3 ? 'yellow' : undefined
   const count = `${summary.done}/${summary.total}`
   const shown = new Set<Item>(summary.today)
-  const remaining = list.headings
-    .map(heading => ({ heading, items: heading.items.filter(item => item.state !== 'done' && !isWaiting(item) && !shown.has(item)) }))
-    .filter(({ items }) => items.length > 0)
+  const remaining = list.headings.map(heading => ({
+    heading,
+    items: heading.items.filter(item => item.state !== 'done' && !isWaiting(item) && !shown.has(item)),
+  }))
   return (
     <Box key="card" flexDirection="column" borderStyle="round" borderDimColor paddingX={1}>
       <Box justifyContent="space-between">
@@ -93,14 +104,23 @@ export function ListPane({ kit, list, summary, path, columns, frame, isWorking }
           {summary.today.map(itemRow)}
         </Box>
       )}
-      {remaining.map(({ heading, items }) => (
-        <Box key={`h-${heading.name}`} flexDirection="column" marginTop={1}>
-          <Text dimColor wrap="truncate-end">
-            {divider(heading.name === '' ? 'list' : heading.name.toLowerCase(), `${heading.items.filter(item => item.state === 'done').length}/${heading.items.length}`, width)}
-          </Text>
-          {items.map(itemRow)}
-        </Box>
-      ))}
+      {remaining.map(({ heading, items }) => {
+        const name = heading.name === '' ? 'list' : heading.name.toLowerCase()
+        const count = `${heading.items.filter(item => item.state === 'done').length}/${heading.items.length}`
+        const isFolded = folded.includes(heading.name)
+        return (
+          <Box key={`h-${heading.name}`} flexDirection="column" marginTop={1}>
+            {items.length === 0 ? (
+              <Text dimColor wrap="truncate-end">
+                {divider(`  ${name}`, count, width)}
+              </Text>
+            ) : (
+              <Button key={`fold:${heading.name}`} label={divider(`${isFolded ? '▸' : '▾'} ${name}`, count, width)} plain dimColor onPress={() => onToggle(heading.name)} />
+            )}
+            {!isFolded && items.map(itemRow)}
+          </Box>
+        )
+      })}
       {summary.waiting.length > 0 && (
         <Box flexDirection="column" marginTop={1}>
           <Text>◷ waiting</Text>
@@ -121,9 +141,11 @@ export function ListPane({ kit, list, summary, path, columns, frame, isWorking }
 
 export type OverviewEntry = { file: ListFile; list: List; summary: Summary }
 
-/** Totals across the repo's lists, then every list but the active one on a line. */
-export function Overview({ kit, entries, activePath, columns }: { kit: Kit; entries: readonly OverviewEntry[]; activePath: string | null; columns: number }) {
-  const { Box, Text } = kit
+export type OverviewProps = { kit: Kit; entries: readonly OverviewEntry[]; activePath: string | null; columns: number; onOpen: (path: string) => void }
+
+/** Totals across the repo's lists, then every list but the active one on a line; pressing one makes it active. */
+export function Overview({ kit, entries, activePath, columns, onOpen }: OverviewProps) {
+  const { Box, Text, Button } = kit
   if (entries.length === 0) return <Text dimColor>  no lists yet · /together:list to start</Text>
   const today = entries.reduce((sum, entry) => sum + entry.summary.today.length, 0)
   const waiting = entries.reduce((sum, entry) => sum + entry.summary.waiting.length, 0)
@@ -137,7 +159,7 @@ export function Overview({ kit, entries, activePath, columns }: { kit: Kit; entr
           const right = `${summary.done}/${summary.total}${list.deadline === null ? '' : ` ⚑ ${shortDate(list.deadline)}`}`
           return (
             <Box key={file.path} justifyContent="space-between">
-              <Text dimColor wrap="truncate-end">{`${summary.pie} ${clip(list.title.toLowerCase(), width - right.length - 4)}`}</Text>
+              <Button key={`list:${file.path}`} label={`${summary.pie} ${clip(list.title.toLowerCase(), width - right.length - 4)}`} plain dimColor onPress={() => onOpen(file.path)} />
               <Text dimColor color={summary.overdue.length > 0 ? 'red' : undefined}>
                 {right}
               </Text>
