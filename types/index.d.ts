@@ -1,4 +1,4 @@
-export type ListFile = { path: string; text: string }
+export type ListFile = { path: string; text: string; mtimeMs: number }
 
 declare module 'claude-code' {
   interface PluginState {

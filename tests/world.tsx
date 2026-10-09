@@ -28,7 +28,8 @@ export function world(on: On, files: Map<string, string> = new Map()): World {
     const dir = `${e.path ?? ROOT}/`
     const names = [...files.keys()].filter(path => path.startsWith(dir) && !path.slice(dir.length).includes('/'))
     if (names.length === 0) throw new Error(`ENOENT ${dir}`)
-    return { value: names.map(path => ({ name: path.slice(dir.length), kind: 'file' as const, size: 1, mtimeMs: 0, isLink: false })) }
+    // a file's position in the map is its age: later entries are newer
+    return { value: names.map(path => ({ name: path.slice(dir.length), kind: 'file' as const, size: 1, mtimeMs: [...files.keys()].indexOf(path), isLink: false })) }
   })
   on('turn.complete', ($, e) => ({ text: e.answer }))
   on('tool.call', () => ({ result: null }))

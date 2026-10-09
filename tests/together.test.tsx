@@ -44,7 +44,7 @@ describe('hooks', () => {
 
   test('AC6: a relative Read activates; other files do not', async ($, on) => {
     mock.clock(on, { now: NOW })
-    world(on, filesOf('emma-launch'))
+    world(on, filesOf('emma-launch', 'otp-outreach'))
     await start($)
     const pane = await mountPane($)
     await $.tool.call({ tool: 'Read', file_path: 'README.md' })
@@ -105,13 +105,14 @@ describe('pane', () => {
     expect(shown).toContain('0/4 ⚑ oct 31')
   })
 
-  test('AC5: no active list shows the overview; no lists shows the empty state', async ($, on) => {
+  test('until the session touches a list, the most recently modified one is shown', async ($, on) => {
     mock.clock(on, { now: NOW })
-    world(on, filesOf('otp-outreach'))
+    world(on, filesOf('emma-launch', 'q4-taxes', 'otp-outreach'))
     await start($)
     const shown = await textOf(await mountPane($))
-    expect(shown).toContain('◑ otp outreach')
-    expect(shown).not.toContain('✦ today\n')
+    expect(shown).toContain('thoughts/lists/otp-outreach.md')
+    expect(shown).toContain('○ q4 taxes')
+    expect(shown).not.toContain('thoughts/lists/q4-taxes.md')
   })
 
   test('AC5: empty state', async ($, on) => {
@@ -158,9 +159,9 @@ describe('band', () => {
     expect(shown).toContain('◑ emma launch 7/14 · next: Buy domain (you) · ◷ neil 4d')
   })
 
-  test('no active list: the band is what is beneath', async ($, on) => {
+  test('no lists: the band is what is beneath', async ($, on) => {
     mock.clock(on, { now: NOW })
-    world(on, filesOf('emma-launch'))
+    world(on, new Map())
     await start($)
     expect(await textsOf(await mountBand($))).toEqual(['BELOW'])
   })

@@ -30,7 +30,7 @@ async function loadLists($: EngineInterface) {
     if (entry.kind !== 'file' || !entry.name.endsWith('.md')) continue
     const path = `${dir}/${entry.name}`
     const text = await $.fs.read(path).catch(() => null)
-    if (typeof text === 'string') files.push({ path, text })
+    if (typeof text === 'string') files.push({ path, text, mtimeMs: entry.mtimeMs })
   }
   await update($, lists, () => files)
 }
@@ -52,6 +52,13 @@ async function entriesOf($: EngineInterface): Promise<OverviewEntry[]> {
     const list = parseList(file.text)
     return list === undefined ? [] : [{ file, list, summary: summarize(list, today) }]
   })
+}
+
+/** The list the session last touched; until it touches one, the most recently modified. */
+async function activeOf($: EngineInterface, entries: readonly OverviewEntry[]): Promise<OverviewEntry | undefined> {
+  const activePath = await read($, activeList)
+  const newest = [...entries].sort((a, b) => b.file.mtimeMs - a.file.mtimeMs)[0]
+  return entries.find(entry => entry.file.path === activePath) ?? newest
 }
 
 const isTouched = (ran: { deny?: unknown; isError?: boolean }, filePath: string) =>
@@ -132,8 +139,7 @@ export const register: Register = on => {
     const kit = $.ui.resolve(e)
     const { Box } = kit
     const entries = await entriesOf($)
-    const activePath = await read($, activeList)
-    const active = entries.find(entry => entry.file.path === activePath)
+    const active = await activeOf($, entries)
     const root = `${await $.session.root()}/`
     const columns = e.props.bodyColumns
     return (
@@ -148,7 +154,7 @@ export const register: Register = on => {
             frame: active.summary.doing === null ? 0 : await read($, frame),
             isWorking: await read($, isWorking),
           })}
-        {Overview({ kit, entries, activePath, columns })}
+        {Overview({ kit, entries, activePath: active?.file.path ?? null, columns })}
       </Box>
     )
   })
@@ -156,8 +162,7 @@ export const register: Register = on => {
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     const below = await next(e)
     if (e.props.hasSurvey) return below
-    const activePath = await read($, activeList)
-    const active = (await entriesOf($)).find(entry => entry.file.path === activePath)
+    const active = await activeOf($, await entriesOf($))
     if (active === undefined) return below
     const { Box, Text } = $.ui.resolve(e)
     return (
