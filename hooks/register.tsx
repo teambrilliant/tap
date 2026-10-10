@@ -46,6 +46,14 @@ async function activate($: EngineInterface, filePath: string) {
   }
 }
 
+/** Shown → close; closed or behind another pane's tab → open (raises it). */
+async function togglePane($: EngineInterface) {
+  const isShown = (await $.ui.panes()).some(pane => pane.id === PANE && pane.isPlaced && pane.isShown)
+  if (isShown) return $.ui.close({ id: PANE })
+  await update($, hasOpened, () => true)
+  await $.ui.open({ id: PANE, title: PANE })
+}
+
 /** Every list that parses, summarized for today. */
 async function entriesOf($: EngineInterface): Promise<OverviewEntry[]> {
   const today = localDate(await $.clock.now())
@@ -172,13 +180,15 @@ export const register: Register = on => {
     if (e.props.hasSurvey) return below
     const active = await activeOf($, await entriesOf($))
     if (active === undefined) return below
-    const { Box, Text } = $.ui.resolve(e)
+    const { Box, Button, Text } = $.ui.resolve(e)
     return (
       <Box flexDirection="column">
         {below}
-        <Text dimColor wrap="truncate-end">
-          {bandText(active.list, active.summary)}
-        </Text>
+        <Button key="toggle-pane" hotkey="r" plain onPress={() => void togglePane($)}>
+          <Text dimColor wrap="truncate-end">
+            {bandText(active.list, active.summary)}
+          </Text>
+        </Button>
       </Box>
     )
   })

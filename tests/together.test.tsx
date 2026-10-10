@@ -199,6 +199,22 @@ describe('band', () => {
     expect(shown).toContain('◑ emma launch 7/14 · next: Buy domain (you) · ◷ neil 4d')
   })
 
+  test('the band toggles the pane (r, or a click); a pane behind another tab is raised, not closed', async ($, on) => {
+    mock.clock(on, { now: NOW })
+    const w = world(on, filesOf('emma-launch'))
+    await start($)
+    const band = await mountBand($)
+    expect((await band.find({ key: 'toggle-pane' }))?.props.hotkey).toBe('r')
+    await band.press({ key: 'toggle-pane' })
+    expect(w.placed.has('together')).toBe(true)
+    await band.press({ key: 'toggle-pane' })
+    expect(w.placed.has('together')).toBe(false)
+    await band.press({ key: 'toggle-pane' })
+    w.hidden.add('together')
+    await band.press({ key: 'toggle-pane' })
+    expect(w.placed.has('together')).toBe(true)
+  })
+
   test('no lists: the band is what is beneath', async ($, on) => {
     mock.clock(on, { now: NOW })
     world(on, new Map())
