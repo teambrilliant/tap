@@ -213,6 +213,7 @@ describe('band', () => {
     w.hidden.add('together')
     await band.press({ key: 'toggle-pane' })
     expect(w.placed.has('together')).toBe(true)
+    expect(w.hidden.has('together')).toBe(false)
   })
 
   test('no lists: the band is what is beneath', async ($, on) => {

@@ -46,10 +46,14 @@ async function activate($: EngineInterface, filePath: string) {
   }
 }
 
-/** Shown → close; closed or behind another pane's tab → open (raises it). */
+/**
+ * Shown → close; closed → open. Behind another pane's tab → close and open again:
+ * re-opening an open id leaves it behind, only a fresh open is shown.
+ */
 async function togglePane($: EngineInterface) {
-  const isShown = (await $.ui.panes()).some(pane => pane.id === PANE && pane.isPlaced && pane.isShown)
-  if (isShown) return $.ui.close({ id: PANE })
+  const pane = (await $.ui.panes()).find(open => open.id === PANE)
+  if (pane !== undefined) await $.ui.close({ id: PANE })
+  if (pane?.isPlaced === true && pane.isShown) return
   await update($, hasOpened, () => true)
   await $.ui.open({ id: PANE, title: PANE })
 }

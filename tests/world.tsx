@@ -12,7 +12,9 @@ export function world(on: On, files: Map<string, string> = new Map()): World {
   on('session.start', ($, e) => ({ cwd: e.cwd }))
   on('command.register', ($, e) => ({ value: { command: e.name } }))
   on('session.root', () => ({ value: ROOT }))
+  // as the engine: a fresh open is the shown tab; re-opening an open id leaves it where it is
   on('ui.open', ($, e) => {
+    if (!placed.has(e.id)) hidden.delete(e.id)
     placed.add(e.id)
     return { value: { isPlaced: true } }
   })
