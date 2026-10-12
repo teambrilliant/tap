@@ -1,6 +1,6 @@
 {
   "name": "together",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "author": { "name": "akurkin" },
   "description": "Things-style shared checklists for you + Claude + others: a /together:list skill and a side pane",
   "skills": "./skills/",

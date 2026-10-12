@@ -47,15 +47,15 @@ async function activate($: EngineInterface, filePath: string) {
 }
 
 /**
- * Shown → close; closed → open. Behind another pane's tab → close and open again:
- * re-opening an open id leaves it behind, only a fresh open is shown.
+ * Shown → close; otherwise close and open fresh: re-opening an open id leaves it behind
+ * another tab, or unplaced. No await before the pane calls: an open after one no longer
+ * counts as the person's press, and an unasked pane waits unplaced below 144 columns.
  */
-async function togglePane($: EngineInterface) {
-  const pane = (await $.ui.panes()).find(open => open.id === PANE)
-  if (pane !== undefined) await $.ui.close({ id: PANE })
-  if (pane?.isPlaced === true && pane.isShown) return
-  await update($, hasOpened, () => true)
-  await $.ui.open({ id: PANE, title: PANE })
+function togglePane($: EngineInterface, isShown: boolean) {
+  void $.ui.close({ id: PANE })
+  if (isShown) return
+  void $.ui.open({ id: PANE, title: PANE })
+  void update($, hasOpened, () => true)
 }
 
 /** Every list that parses, summarized for today. */
@@ -184,11 +184,13 @@ export const register: Register = on => {
     if (e.props.hasSurvey) return below
     const active = await activeOf($, await entriesOf($))
     if (active === undefined) return below
+    const pane = (await $.ui.panes()).find(open => open.id === PANE)
+    const isShown = pane?.isPlaced === true && pane.isShown
     const { Box, Button, Text } = $.ui.resolve(e)
     return (
       <Box flexDirection="column">
         {below}
-        <Button key="toggle-pane" hotkey="r" plain onPress={() => void togglePane($)}>
+        <Button key="toggle-pane" hotkey="r" plain onPress={() => togglePane($, isShown)}>
           <Text dimColor wrap="truncate-end">
             {bandText(active.list, active.summary)}
           </Text>

@@ -203,17 +203,29 @@ describe('band', () => {
     mock.clock(on, { now: NOW })
     const w = world(on, filesOf('emma-launch'))
     await start($)
-    const band = await mountBand($)
-    expect((await band.find({ key: 'toggle-pane' }))?.props.hotkey).toBe('r')
-    await band.press({ key: 'toggle-pane' })
+    expect((await (await mountBand($)).find({ key: 'toggle-pane' }))?.props.hotkey).toBe('r')
+    // the engine redraws the band as panes open and close: each press is on a fresh drawing
+    const press = async () => (await mountBand($)).press({ key: 'toggle-pane' })
+    await press()
     expect(w.placed.has('together')).toBe(true)
-    await band.press({ key: 'toggle-pane' })
+    await press()
     expect(w.placed.has('together')).toBe(false)
-    await band.press({ key: 'toggle-pane' })
+    await press()
     w.hidden.add('together')
-    await band.press({ key: 'toggle-pane' })
+    await press()
     expect(w.placed.has('together')).toBe(true)
     expect(w.hidden.has('together')).toBe(false)
+  })
+
+  test('a press opens with no pane call awaited first: the open stays the person\'s, placed on a narrow terminal', async ($, on) => {
+    mock.clock(on, { now: NOW })
+    const w = world(on, filesOf('emma-launch'))
+    await start($)
+    const band = await mountBand($)
+    w.paneCalls.length = 0
+    await band.press({ key: 'toggle-pane' })
+    expect(w.paneCalls.slice(0, w.paneCalls.indexOf('open'))).not.toContain('panes')
+    expect(w.placed.has('together')).toBe(true)
   })
 
   test('no lists: the band is what is beneath', async ($, on) => {
