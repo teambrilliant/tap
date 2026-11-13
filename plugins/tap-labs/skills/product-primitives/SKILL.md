@@ -16,7 +16,7 @@ Break complex systems into fundamental primitives — deep, information-hiding b
 
 ## When to Use
 
-One-off analysis for big-picture thinking — new applications, large features, or understanding existing system architecture. While `/dev-skills:product-thinker` thinks from the user's perspective, product primitives thinks from the builder's perspective, identifying where to draw module boundaries and what each piece should encapsulate.
+One-off analysis for big-picture thinking — new applications, large features, or understanding existing system architecture. While `/tap:product-thinker` thinks from the user's perspective, product primitives thinks from the builder's perspective, identifying where to draw module boundaries and what each piece should encapsulate.
 
 Use `Explore` sub-agents to research the codebase if working in an existing project. Use browser (Chrome DevTools MCP) to walk through the product if it's running.
 
@@ -163,5 +163,5 @@ which products to feature; Measurement doesn't know how Orchestration handled ra
 
 ## Handoffs
 
-- Pair with `/dev-skills:product-thinker` for user-perspective analysis alongside system decomposition
-- Feed individual primitives into `/dev-skills:shaping-work` to shape them as work items
+- Pair with `/tap:product-thinker` for user-perspective analysis alongside system decomposition
+- Feed individual primitives into `/tap:shaping-work` to shape them as work items

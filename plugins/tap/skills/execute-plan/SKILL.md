@@ -1,10 +1,10 @@
 ---
 name: execute-plan
 description: >-
-  Execute an approved plan from thoughts/plans/ to completion — every phase, every check, every
+  Execute an approved plan from tap/plans/ to completion — every phase, every check, every
   acceptance criterion — and stop only when DONE or BLOCKED. Use when someone says "execute the plan",
   "implement the plan", "build it" after a plan was approved, "start building", or points at a file in
-  thoughts/plans/. Medium/large work without a plan → /dev-skills:write-plan first.
+  tap/plans/. Medium/large work without a plan → /tap:write-plan first.
 ---
 
 # Execute Plan
@@ -13,13 +13,13 @@ Carry an approved plan through to working, verified code. The plan is a contract
 
 ## Input
 
-A plan in `thoughts/plans/` (from `/dev-skills:write-plan`). No plan and the work is medium/large → write one first. No plan and the work is small and clear → state the acceptance criteria in one line each, then run under the same contract.
+A plan in `tap/plans/` (from `/tap:write-plan`). No plan and the work is medium/large → write one first. No plan and the work is small and clear → state the acceptance criteria in one line each, then run under the same contract.
 
 ## The Contract
 
 Approval of the plan is the only gate. From then on you own delivering it, and a run ends in exactly one of two states:
 
-**DONE** — every phase implemented; every phase check green; full test suite, typecheck and lint with no new failures against the baseline you recorded at the start; every acceptance criterion verified with cited evidence. For UI criteria, that means you ran `/dev-skills:qa-test` yourself and it passed.
+**DONE** — every phase implemented; every phase check green; full test suite, typecheck and lint with no new failures against the baseline you recorded at the start; every acceptance criterion verified with cited evidence. For UI criteria, that means you ran `/tap:qa-test` yourself and it passed.
 
 **BLOCKED** — the contract can't be satisfied without something only the user can provide:
 - a permission, credential, or access you don't have (and the plan's pre-flight blockers didn't cover)
@@ -81,7 +81,7 @@ Then move straight to the next phase.
 
 - Full test suite, typecheck, lint.
 - Every acceptance criterion from the shape doc, each with evidence: command output, query result, or qa-test finding.
-- UI criteria → run `/dev-skills:qa-test` in agent mode. It fixes and re-tests up to its own limit; a criterion it can't get green is a BLOCKED item with its evidence.
+- UI criteria → run `/tap:qa-test` in agent mode. It fixes and re-tests up to its own limit; a criterion it can't get green is a BLOCKED item with its evidence.
 
 ### 4. Report
 
@@ -125,6 +125,6 @@ See [write-plan/references/rollout-primitives.md](../write-plan/references/rollo
 
 ## Handoffs
 
-- DONE → offer `/tap-skills:blast-radius` for an independent review before merge: it checks the Decisions log against the diff and finds the calls it missed.
-- DONE on customer-facing work → offer `/dev-skills:explain` on the shipped diff, seeded with the Decisions, so the developer can explain and defend what shipped.
-- BLOCKED because the plan itself is wrong → `/dev-skills:write-plan` with the evidence.
+- DONE → offer `/tap:blast-radius` for an independent review before merge: it checks the Decisions log against the diff and finds the calls it missed.
+- DONE on customer-facing work → offer `/tap:explain` on the shipped diff, seeded with the Decisions, so the developer can explain and defend what shipped.
+- BLOCKED because the plan itself is wrong → `/tap:write-plan` with the evidence.

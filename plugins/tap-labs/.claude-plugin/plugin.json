@@ -1,7 +1,7 @@
 {
-  "name": "tap-skills",
-  "description": "The operating system for human+agent dev teams. Enables agents to work autonomously and helps humans support them effectively. Assesses repo readiness, analyzes blast radius before merging, builds and runs release smoke-test catalogs, monitors system health, drives retrospectives, and builds navigable alignment-diagram atlases.",
-  "version": "0.19.0",
+  "name": "tap-labs",
+  "description": "Experimental tap skills, kept out of the core plugin until they earn a place: discovery, primitives, PR-FAQ, systems health, retrospectives, atlases, product context, loop check, doc rendering and Dossier publishing.",
+  "version": "0.1.0",
   "author": {
     "name": "Team Brilliant",
     "url": "https://teambrilliant.ai"

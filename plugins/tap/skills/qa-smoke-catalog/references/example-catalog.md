@@ -1,4 +1,4 @@
-# Example: a real `.tap/smoke-tests.md`
+# Example: a real `tap/smoke-tests.md`
 
 This is a complete, real smoke-test catalog for a Shopify-embedded partner back office. Use it as the canonical format reference when authoring a catalog with `qa-smoke-catalog`. Note how cases stay lean, assertions are declarative, state-dependent surfaces use `OR` alternatives, and `> ` note blocks explain *why* a case exists (cross-DB dependency, recent ticket) without instructing the runner.
 

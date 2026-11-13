@@ -49,7 +49,7 @@ High re-commit count without associated test/script changes = manual iteration.
 
 **Workflow descriptions in docs** — read CLAUDE.md, README, and contributing guides. Any multi-step process described in prose is a candidate. Pay attention to sequences like "first run X, then check Y, then run Z" — that's an unautomated pipeline.
 
-**Existing tap-audit** — if `.tap/tap-audit.md` exists, read its feedback loops section. Don't redo that work, but check if its findings are still current.
+**Existing tap-audit** — if `tap/audit.md` exists, read its feedback loops section. Don't redo that work, but check if its findings are still current.
 
 ### 2. Assess Each Loop
 

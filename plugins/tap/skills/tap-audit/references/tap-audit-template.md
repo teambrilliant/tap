@@ -1,6 +1,6 @@
 # TAP Audit Output Template
 
-Use this template when writing `.tap/tap-audit.md`. Adapt sections based on what's discoverable — omit sections where no data is available rather than writing "unknown."
+Use this template when writing `tap/audit.md`. Adapt sections based on what's discoverable — omit sections where no data is available rather than writing "unknown."
 
 ```markdown
 # TAP Audit
@@ -18,10 +18,10 @@ Codebase: [repo name or directory name]
 ### Documentation
 - CLAUDE.md: [status and quality assessment]
 - AGENTS.md: [status or "missing"]
-- Architecture decisions: [.tap/architecture.md seeded / existing / "none discovered"]
+- Architecture decisions: [tap/architecture.md seeded / existing / "none discovered"]
 
 ### Strategic Context
-- ✓/✗ `.tap/product.md` exists
+- ✓/✗ `tap/product.md` exists
 - ✓/✗ ≤ 80 lines
 - ✓/✗ `mtime` within 90 days
 [1 sentence: what agents know or don't know about product direction from this repo's artifacts]

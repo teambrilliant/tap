@@ -90,4 +90,4 @@ N/A. Use the existing secondary-action and confirmation-dialog patterns.
   Recommend: CSV only. Excel, Sheets, and every downstream tool open it.
   Discarded: XLSX in v1 (heavier generation and no clear demand yet).
 
-No `.tap/product.md` was available, so `/tap-skills:curate-product-context` would let future shapes state strategic fit against real bets. Next step: `/dev-skills:write-plan`. Nothing was written to disk, as you asked.
+No `tap/product.md` was available, so `/tap-labs:curate-product-context` would let future shapes state strategic fit against real bets. Next step: `/tap:write-plan`. Nothing was written to disk, as you asked.

@@ -53,9 +53,9 @@ describe('hooks', () => {
     await start($)
     const pane = await mountPane($)
     await $.tool.call({ tool: 'Read', file_path: 'README.md' })
-    expect(await textOf(pane)).not.toContain('thoughts/lists/emma-launch.md')
-    await $.tool.call({ tool: 'Read', file_path: 'thoughts/lists/emma-launch.md' })
-    expect(await textOf(pane)).toContain('thoughts/lists/emma-launch.md')
+    expect(await textOf(pane)).not.toContain('tap/lists/emma-launch.md')
+    await $.tool.call({ tool: 'Read', file_path: 'tap/lists/emma-launch.md' })
+    expect(await textOf(pane)).toContain('tap/lists/emma-launch.md')
   })
 
   test('AC6: /together <slug> switches; an unknown slug keeps the active list', async ($, on) => {
@@ -63,10 +63,10 @@ describe('hooks', () => {
     world(on, filesOf('emma-launch', 'q4-taxes'))
     await start($)
     expect((await run($, 'q4-taxes')).text).toBe('together: q4-taxes')
-    expect((await run($, 'nope')).text).toBe('together: no thoughts/lists/nope.md')
+    expect((await run($, 'nope')).text).toBe('together: no tap/lists/nope.md')
     const shown = await textOf(await mountPane($))
     expect(shown).toContain('○ q4 taxes')
-    expect(shown).toContain('thoughts/lists/q4-taxes.md')
+    expect(shown).toContain('tap/lists/q4-taxes.md')
   })
 })
 
@@ -78,7 +78,7 @@ describe('pane', () => {
     await run($, 'emma-launch')
     const pane = await mountPane($)
     const shown = await textOf(pane)
-    for (const part of ['◑ emma launch', '⚑ 12d', '▕', '7/14', '✦ today', '○ Buy domain', '◐ Update site to v3', '╶─   admin', '○ Shortlist 10 companies', '◷ waiting', '◷ neil · Pricing changes', '4d', '7 done', 'thoughts/lists/emma-launch.md']) {
+    for (const part of ['◑ emma launch', '⚑ 12d', '▕', '7/14', '✦ today', '○ Buy domain', '◐ Update site to v3', '╶─   admin', '○ Shortlist 10 companies', '◷ waiting', '◷ neil · Pricing changes', '4d', '7 done', 'tap/lists/emma-launch.md']) {
       expect(shown).toContain(part)
     }
     expect((await labelsOf(pane)).join('\n')).toContain('╶─ ▾ outreach')
@@ -119,9 +119,9 @@ describe('pane', () => {
     await start($)
     const pane = await mountPane($)
     const shown = await textOf(pane)
-    expect(shown).toContain('thoughts/lists/otp-outreach.md')
+    expect(shown).toContain('tap/lists/otp-outreach.md')
     expect(await labelsOf(pane)).toContain('○ q4 taxes')
-    expect(shown).not.toContain('thoughts/lists/q4-taxes.md')
+    expect(shown).not.toContain('tap/lists/q4-taxes.md')
   })
 
   test('AC5: empty state', async ($, on) => {
@@ -167,7 +167,7 @@ describe('pressing', () => {
     const pane = await mountPane($)
     await pane.press({ key: `list:${listPath('q4-taxes')}` })
     const shown = await textOf(pane)
-    expect(shown).toContain('thoughts/lists/q4-taxes.md')
+    expect(shown).toContain('tap/lists/q4-taxes.md')
     expect(await labelsOf(pane)).toContain('◑ emma launch')
   })
 

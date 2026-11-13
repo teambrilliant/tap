@@ -8,8 +8,8 @@ description: >-
   slowed you down", or at the end of a session when the user reflects on agent friction. The
   scope marker is THIS SESSION / THIS CONVERSATION — that's the discriminator from sibling
   skills. Reads the transcript only, classifies each steer, routes to the right fix tool.
-  NOT for: assessing repo readiness before work (use loop-check), retros on past
-  PRs/incidents/releases (use tap-skills:retrospective), coding, or applying edits inline.
+  NOT for: assessing repo readiness before work (use tap-audit), retros on past
+  PRs/incidents/releases, coding, or applying edits inline.
 ---
 
 # Tighten Loop
@@ -24,7 +24,7 @@ Read the transcript. Find the steers. Classify the gap. Route to the right fix t
 2. Classify each by gap type
 3. Route each to the right fix tool
 4. Present findings and offer handoffs
-5. Optionally append to `.tap/learnings.md`
+5. Optionally append to `tap/learnings.md`
 
 ### 1. Harvest Steers
 
@@ -34,7 +34,7 @@ Scan the conversation for moments where the user redirected the agent. Look for:
 - **Standing rules** — "always do X", "never do Y", "from now on…", "going forward…"
 - **Validated judgment calls** — when the user accepts a non-obvious choice without pushback, or says "yes exactly that" / "perfect, keep doing it that way". These are easy to miss because they're quiet, but capturing them prevents drift in future sessions.
 - **Repeated friction** — when the user had to remind the agent of the same thing twice, that's the strongest signal. Flag explicitly.
-- **Agent struggle** — moments the *agent* thrashed even without an explicit correction from you: retried the same command several times, hit dead-ends, hallucinated a data shape, or asked you to paste/fetch something it should have obtained itself. These are capability gaps you may have waited through silently — often the highest-value harness fixes (a missing tool, skill, or access), routing to `tool-install` / `new-skill` / `skill-update`. Scope stays **this transcript only**; if pinning the cause needs git/gh history across sessions, that's `tap-skills:retrospective`.
+- **Agent struggle** — moments the *agent* thrashed even without an explicit correction from you: retried the same command several times, hit dead-ends, hallucinated a data shape, or asked you to paste/fetch something it should have obtained itself. These are capability gaps you may have waited through silently — often the highest-value harness fixes (a missing tool, skill, or access), routing to `tool-install` / `new-skill` / `skill-update`. Scope stays **this transcript only**.
 
 Skip: tactical exchanges that are normal conversation flow ("can you also add X"), or one-off task pivots that don't generalize. Also filter out steers about *personal orchestration style* (how the user wants the agent to orchestrate for them) — those are out of scope for repo-portable fixes.
 
@@ -42,7 +42,7 @@ If the harvest is thin (≤2 steers) or empty after filtering, say so honestly. 
 
 ### 2. Classify by Gap Type
 
-Same taxonomy as `tap-skills:retrospective`, so the two skills' outputs are interchangeable:
+Classify each steer by the gap behind it:
 
 | Gap | Agent lacked… | Examples |
 |---|---|---|
@@ -107,23 +107,23 @@ After the table, offer handoffs as a numbered list. Let the user pick which fixe
 
 If the orchestrator (or user) asked for findings in a specific format (YAML, JSON, ticket body, etc.), produce that on top of the table — but the table is the canonical human output and shouldn't be skipped.
 
-### 5. Append to .tap/learnings.md (if it exists)
+### 5. Append to tap/learnings.md (if it exists)
 
-If `.tap/learnings.md` exists, append the harvested findings using retrospective's format:
+If `tap/learnings.md` exists, append the harvested findings in this format:
 
 ```
 [YYYY-MM-DD] — session debrief
 - [steer summary] → [gap type] → [specific fix]
 ```
 
-If the file doesn't exist, skip silently. Don't create it — that's `tap-skills:retrospective`'s job (it owns `.tap/learnings.md`'s lifecycle); creating it from a debrief would step on that ownership.
+If the file doesn't exist, skip silently. Don't create it from a debrief.
 
 ## Boundaries
 
-- Does NOT scan the repo (that's `loop-check`)
-- Does NOT pull git/gh history (that's `tap-skills:retrospective`)
+- Does NOT scan the repo (that's `tap:tap-audit`)
+- Does NOT pull git/gh history
 - Does NOT apply edits itself — routes to the right fix skill
 - Does NOT route to harness-local memory or personal global config — only repo-portable fixes (CLAUDE.md, AGENTS.md, `.claude/settings.json`, hooks, skills)
-- Does NOT create GitHub tickets (that's retrospective's job)
+- Does NOT create GitHub tickets
 - Does NOT auto-trigger; user invokes when ready to debrief
 - Findings are recommendations, not gates — user decides what to apply

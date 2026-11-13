@@ -3,7 +3,7 @@ import type { On } from 'claude-code'
 export type World = { placed: Set<string>; hidden: Set<string>; files: Map<string, string>; paneCalls: string[] }
 
 export const ROOT = '/work'
-export const listPath = (slug: string) => `${ROOT}/thoughts/lists/${slug}.md`
+export const listPath = (slug: string) => `${ROOT}/tap/lists/${slug}.md`
 
 /** The world beneath the mod in a test: a session at /work, panes that place (each pane call logged), files (absolute paths) from a map. */
 export function world(on: On, files: Map<string, string> = new Map()): World {

@@ -1,13 +1,13 @@
 ---
 name: curate-product-context
-description: Curate and maintain `.tap/product.md` — a compressed, agent-readable product-context file (vision, what we build, audience, current focus, bets, non-goals). Use when someone says "curate product context", "install product context", "update product context", "product vision in repo", "what are we building", or when an agent enters a repo and can't find durable product-strategic context. Auto-detects interview / review / refresh mode. Outputs to `.tap/product.md`.
+description: Curate and maintain `tap/product.md` — a compressed, agent-readable product-context file (vision, what we build, audience, current focus, bets, non-goals). Use when someone says "curate product context", "install product context", "update product context", "product vision in repo", "what are we building", or when an agent enters a repo and can't find durable product-strategic context. Auto-detects interview / review / refresh mode. Outputs to `tap/product.md`.
 ---
 
 # Curate Product Context
 
-Install and maintain durable product-strategic context as an in-repo artifact (`.tap/product.md`) so human engineers and AI agents can make decisions without pinging the leader. One file, six sections, ≤ 80 lines, principle-driven.
+Install and maintain durable product-strategic context as an in-repo artifact (`tap/product.md`) so human engineers and AI agents can make decisions without pinging the leader. One file, six sections, ≤ 80 lines, principle-driven.
 
-This skill does NOT describe the tech stack (CLAUDE.md's job) or architectural decisions (`.tap/architecture.md` — seeded by `/tap-skills:tap-audit`). It captures product direction: where we're ultimately going, what we build, for whom, what we're solving now, what bets we're making, what we're NOT doing.
+This skill does NOT describe the tech stack (CLAUDE.md's job) or architectural decisions (`tap/architecture.md` — seeded by `/tap:tap-audit`). It captures product direction: where we're ultimately going, what we build, for whom, what we're solving now, what bets we're making, what we're NOT doing.
 
 ## Process
 
@@ -20,11 +20,11 @@ This skill does NOT describe the tech stack (CLAUDE.md's job) or architectural d
 
 ### 0. Check State
 
-Check for `.tap/product.md`:
+Check for `tap/product.md`:
 
 ```bash
-if [[ -f .tap/product.md ]]; then
-  mtime_epoch=$(stat -f %m .tap/product.md 2>/dev/null || stat -c %Y .tap/product.md)
+if [[ -f tap/product.md ]]; then
+  mtime_epoch=$(stat -f %m tap/product.md 2>/dev/null || stat -c %Y tap/product.md)
   days_old=$(( ( $(date +%s) - mtime_epoch ) / 86400 ))
 fi
 ```
@@ -33,9 +33,9 @@ fi
 
 | Condition | Mode |
 |-----------|------|
-| `.tap/product.md` missing | **Interview** — walk all six sections, require confirmation before write |
-| `.tap/product.md` exists, < 90 days old | **Review** — prune-first protocol, diff, write on confirm |
-| `.tap/product.md` exists, ≥ 90 days old | **Refresh** — staleness framing, then review protocol |
+| `tap/product.md` missing | **Interview** — walk all six sections, require confirmation before write |
+| `tap/product.md` exists, < 90 days old | **Review** — prune-first protocol, diff, write on confirm |
+| `tap/product.md` exists, ≥ 90 days old | **Refresh** — staleness framing, then review protocol |
 
 Never overwrite without explicit user confirmation of the final diff.
 
@@ -46,9 +46,9 @@ Always read before asking anything (skip any that don't exist):
 ```
 CLAUDE.md                     → stack signals, product hints
 README.md                     → product description, audience
-.tap/tap-audit.md             → readiness score, leverage points
-.tap/system-health.md         → velocity, in-flight areas
-.tap/architecture.md          → arch decisions (to avoid duplicating)
+tap/audit.md             → readiness score, leverage points
+tap/system-health.md         → velocity, in-flight areas
+tap/architecture.md          → arch decisions (to avoid duplicating)
 git log --oneline --since="90 days ago"   → recent focus signals
 gh pr list --state merged --limit 30      → what shipped recently
 ```
@@ -76,7 +76,7 @@ Open with the definition:
 >
 > It's the thing that, if it stopped being true, would change how you decide.
 
-Show 2-3 examples from `.tap/architecture.md`'s Principle lines (or the format spec's example if no `architecture.md` exists yet):
+Show 2-3 examples from `tap/architecture.md`'s Principle lines (or the format spec's example if no `architecture.md` exists yet):
 
 - `Principle: errors are data, not exceptions. Make error paths visible in types.` *(tells you what to build AND what to reject)*
 - `Principle: separate orchestration from execution. Let the platform handle retry/state/recovery.` *(tells you what belongs where)*
@@ -119,7 +119,7 @@ Loop: user drafts → run the three checks out loud → user refines. Say which 
   - For the Principle line, **run the Principle coaching loop above** before accepting a draft. Frame: `What's the one belief about your audience that shapes every decision? (running pressure-test after your draft)`
 
 **Section 4 — Current focus**
-- Inferred from: `git log --oneline --since="90 days ago"` (group commit subjects), recent merged PR titles, `.tap/system-health.md` if it names in-flight areas
+- Inferred from: `git log --oneline --since="90 days ago"` (group commit subjects), recent merged PR titles, `tap/system-health.md` if it names in-flight areas
 - Present: `Recent activity clusters around: [themes extracted from git log / PR titles]. Is the current focus one of these, or something else?`
 - Prompts:
   - `The problem you're solving this quarter (not a feature list — the underlying problem)?`
@@ -128,10 +128,10 @@ Loop: user drafts → run the three checks out loud → user refines. Say which 
 - Then trace it upward, once: `Does this focus move you toward the Vision?` A "no" is allowed — survival work, table stakes, paying down a debt — but name it as deliberate rather than letting it pass unremarked. Repeated unremarked "no"s are the thing this file exists to make visible.
 
 **Section 5 — Bets**
-- Inferred from: Current focus (step 3 answer) + active feature branches (`git branch -r --sort=-committerdate | head -20`) + recent architectural decisions in `.tap/architecture.md`
+- Inferred from: Current focus (step 3 answer) + active feature branches (`git branch -r --sort=-committerdate | head -20`) + recent architectural decisions in `tap/architecture.md`
 - Present: `Given the focus above, it looks like these are in-flight: [list]. Are these your bets, or are the real bets different?`
 - Prompt: `List 2-4 bets. For each: what you're trying + why you think it'll work.`
-- **Run the bet test** on each one (below). These lines are what downstream work gets checked against — `/dev-skills:shaping-work` asks every shaped feature which bet it serves. A vague bet makes that check meaningless.
+- **Run the bet test** on each one (below). These lines are what downstream work gets checked against — `/tap:shaping-work` asks every shaped feature which bet it serves. A vague bet makes that check meaningless.
 
 ##### Bet test (use whenever bets are drafted)
 
@@ -140,7 +140,7 @@ A bet is a claim that could turn out wrong. Four checks, surfaced out loud, per 
 1. *Could this be wrong?* "Improve onboarding" can't be wrong — it's a direction. "New users who hit the checklist activate at twice the rate of those who don't" can. If it can't be false, it's not a bet; ask what the underlying claim is.
 2. *What kills it?* Name the observation that would make you stop. A bet with no kill condition is a commitment wearing a bet's clothes — and it'll absorb budget indefinitely.
 3. *Does this follow from the insight, or did you already want to build it?* The common failure is a feature someone wanted, reverse-justified against the focus. Test: if you'd never thought of this feature, what would the insight have predicted you'd do?
-4. *What does being wrong cost?* Cheap to be wrong → just run it. Expensive to be wrong → it shouldn't be a bet yet, it should be an experiment; recommend `/dev-skills:product-discovery` before it goes in the file.
+4. *What does being wrong cost?* Cheap to be wrong → just run it. Expensive to be wrong → it shouldn't be a bet yet, it should be an experiment; recommend `/tap-labs:product-discovery` before it goes in the file.
 
 Loop: user drafts → run the checks out loud → user refines. Say which check failed and why. Don't soften a bet into a direction to make it survive check 1 — a bet that had to be made vague to pass isn't worth writing down.
 
@@ -186,25 +186,25 @@ Draft is [N] lines, over the 80-line ceiling. Which section should we compress?
 ```
 Refuse to proceed until the draft is ≤ 80 lines.
 
-**Duplication check**: for each section, scan `CLAUDE.md` and `.tap/architecture.md` for overlapping content. Report: `Detected overlap with [file]: "[text]". Removed from draft.`
+**Duplication check**: for each section, scan `CLAUDE.md` and `tap/architecture.md` for overlapping content. Report: `Detected overlap with [file]: "[text]". Removed from draft.`
 
 **Present the diff**:
 - For interview mode: show full draft.
 - For review/refresh: show unified diff of current vs draft, with deletions displayed as prominently as additions (the pruning matters).
 
-Ask: `Write this to .tap/product.md? (yes / edit / cancel)`
+Ask: `Write this to tap/product.md? (yes / edit / cancel)`
 
 ### 5. Write on Confirm
 
 On `yes`:
-- Create `.tap/` if it doesn't exist.
-- Write `.tap/product.md`.
+- Create `tap/` if it doesn't exist.
+- Write `tap/product.md`.
 - Confirm write + line count.
-- **Wire discoverability**: `.tap/product.md` is only read by agents that know it exists —
-  CLAUDE.md is the only file loaded automatically. Check the repo's CLAUDE.md for a `.tap/`
+- **Wire discoverability**: `tap/product.md` is only read by agents that know it exists —
+  CLAUDE.md is the only file loaded automatically. Check the repo's CLAUDE.md for a `tap/`
   context-index line:
   - **Index line exists** → make sure it mentions `product.md` (product strategy: audience, focus, bets, non-goals); append if missing.
-  - **No index line** → add one (show the diff, write on confirm): `Durable project context lives in .tap/ — product.md (product strategy: vision, audience, focus, bets, non-goals)[, plus any other .tap/ files present]. Read the relevant file before deciding in that area.`
+  - **No index line** → add one (show the diff, write on confirm): `Durable project context lives in tap/ — product.md (product strategy: vision, audience, focus, bets, non-goals)[, plus any other tap/ files present]. Read the relevant file before deciding in that area.`
   - **No CLAUDE.md** → tell the user the artifact is invisible to agents until something references it; offer a minimal CLAUDE.md containing just that pointer.
 
 On `edit`: loop back to step 4 with the requested changes.
@@ -216,13 +216,13 @@ See [references/product-context-format.md](references/product-context-format.md)
 
 ## Handoff
 
-- **First-time run in a new repo** (interview mode completed) → recommend running `/tap-skills:tap-audit` next. `product.md` gives `tap-audit`'s new Strategic Context dimension a ✓.
+- **First-time run in a new repo** (interview mode completed) → recommend running `/tap:tap-audit` next. `product.md` gives `tap-audit`'s new Strategic Context dimension a ✓.
 - **When the user wants to codify product-strategic rules into enforceable checks** → not in scope here. That's the future `codify-opinion` skill.
 
 ## Boundaries
 
-- Does NOT author or modify `.tap/architecture.md` (that's `/tap-skills:tap-audit`).
+- Does NOT author or modify `tap/architecture.md` (that's `/tap:tap-audit`).
 - Does NOT describe the tech stack, coding conventions, or commands (CLAUDE.md's job).
 - Does NOT capture feature roadmaps, personas, team topology, or competitor positioning.
-- Does NOT enforce freshness in CI — `/tap-skills:tap-audit`'s Strategic Context dimension scores it, but nothing blocks on it.
-- Does NOT overwrite `.tap/product.md` without explicit user confirmation of the final diff.
+- Does NOT enforce freshness in CI — `/tap:tap-audit`'s Strategic Context dimension scores it, but nothing blocks on it.
+- Does NOT overwrite `tap/product.md` without explicit user confirmation of the final diff.

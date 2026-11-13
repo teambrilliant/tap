@@ -1,6 +1,6 @@
 ---
 name: dossier-publish
-description: Publish docs (plans, research, shapes, alignment atlases) to the private Dossier platform at teambrilliant.dev, pull them back with comments on any machine, and manage external share links. Use when someone says "publish to dossier", "dossier publish", "publish this doc/plan", "push this to teambrilliant.dev", "share this doc with the team", "share this externally", "pull the plan from dossier", "get the comments on the doc", or when resuming work on a plan that lives on Dossier. Scope guard - "publish" alone is ambiguous (npm, blog, git); this skill is only for the Dossier doc platform. Requires DOSSIER_TOKEN in the environment. Pairs with tap-skills:render-doc, which produces the HTML this skill uploads.
+description: Publish docs (plans, research, shapes, alignment atlases) to the private Dossier platform at teambrilliant.dev, pull them back with comments on any machine, and manage external share links. Use when someone says "publish to dossier", "dossier publish", "publish this doc/plan", "push this to teambrilliant.dev", "share this doc with the team", "share this externally", "pull the plan from dossier", "get the comments on the doc", or when resuming work on a plan that lives on Dossier. Scope guard - "publish" alone is ambiguous (npm, blog, git); this skill is only for the Dossier doc platform. Requires DOSSIER_TOKEN in the environment. Pairs with tap-labs:render-doc, which produces the HTML this skill uploads.
 ---
 
 # Dossier Publish
@@ -31,8 +31,8 @@ Slug rules — set identity explicitly; never rely on the filename default:
 ```bash
 # markdown docs: render first (deterministic), then publish — the sibling .md is
 # uploaded automatically as the doc's source for round-trip pulls
-bun <render-doc-skill-dir>/scripts/render.ts thoughts/plans/my-plan.md
-bun scripts/dossier.ts publish thoughts/plans/my-plan.html --slug=emma-auth-plan
+bun <render-doc-skill-dir>/scripts/render.ts tap/plans/my-plan.md
+bun scripts/dossier.ts publish tap/plans/my-plan.html --slug=emma-auth-plan
 
 # directory bundles (e.g. an alignment atlas)
 bun scripts/dossier.ts publish areas/emma/diagrams/atlas --slug=emma-atlas

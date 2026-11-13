@@ -13,7 +13,7 @@ export type ThoughtsRun = { command: string; isOk: boolean; at: number; editSeq:
 
 declare module 'claude-code' {
   interface PluginState {
-    thoughts: {
+    'tap-pane': {
       pins: ThoughtsPin[]
       isPaneShown: boolean
       isSeeded: boolean

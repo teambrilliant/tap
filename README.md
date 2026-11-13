@@ -1,63 +1,92 @@
-# dev-skills
+# tap
 
-Generic development workflow skills for Claude Code. Break down, shape, plan, implement, verify.
+Skills and panes for teams of agents and people.
+
+A tap is the valve on a stock. Work sits in the stock (your lists), and the tap controls how much of it flows through agents without a human. A low-trust repo has the tap barely open: agents carry work to a PR and a human merges. A repo with strong tests and verification has it wide open.
 
 ## Install
 
 ```
 /plugin marketplace add teambrilliant/marketplace
-/plugin install dev-skills@teambrilliant
+/plugin install tap@teambrilliant-marketplace
 ```
 
-## Skills
+Optional: `tap-pane` and `together` (Claude Code panes), `tap-labs` (experimental skills).
 
-| Skill              | Invoke                           | What it does                                                   |
-| ------------------ | -------------------------------- | -------------------------------------------------------------- |
-| product-primitives | `/dev-skills:product-primitives` | System → fundamental primitives & building blocks              |
-| product-thinker    | `/dev-skills:product-thinker`    | Product decisions, UX analysis, build-vs-buy                   |
-| product-discovery  | `/dev-skills:product-discovery`  | Validate ideas before committing to build                      |
-| working-backwards  | `/dev-skills:working-backwards`  | PR-FAQ to pressure-test an idea customer-first                 |
-| strategic-thinker  | `/dev-skills:strategic-thinker`  | Approach selection, tradeoffs, sanity checks                   |
-| shaping-work       | `/dev-skills:shaping-work`       | Rough idea → shape in `thoughts/shapes/`                       |
-| write-plan         | `/dev-skills:write-plan`         | Shape/ticket → plan in `thoughts/plans/` (layers, checks)       |
-| execute-plan       | `/dev-skills:execute-plan`       | Plan → verified code; ends DONE or BLOCKED, no check-ins       |
-| qa-test            | `/dev-skills:qa-test`            | Browser-based acceptance-criteria verification via sub-agent   |
-| explain            | `/dev-skills:explain`            | ASCII + plain words: understand and defend a plan or change    |
+## Core skills (`tap`)
 
-> Repo feedback-loop assessment (`loop-check`) and session debrief (`tighten-loop`) now live in [`tap-skills`](https://github.com/teambrilliant/tap-skills), invoked as `/tap-skills:loop-check` and `/tap-skills:tighten-loop`.
+| Skill | Invoke | What it does |
+| --- | --- | --- |
+| product-thinker | `/tap:product-thinker` | Product decisions, UX analysis, build-vs-buy |
+| strategic-thinker | `/tap:strategic-thinker` | Approach selection, tradeoffs, sanity checks |
+| shaping-work | `/tap:shaping-work` | Rough idea → shape in `tap/shapes/` |
+| write-plan | `/tap:write-plan` | Shape or ticket → plan in `tap/plans/` (layers, agent-runnable checks) |
+| execute-plan | `/tap:execute-plan` | Plan → verified code; ends DONE or BLOCKED, no check-ins |
+| qa-test | `/tap:qa-test` | Browser-based verification of acceptance criteria |
+| explain | `/tap:explain` | ASCII + plain words: understand and defend a plan or change |
+| blast-radius | `/tap:blast-radius` | Impact analysis of a change before merging |
+| tap-audit | `/tap:tap-audit` | How ready a repo is for autonomous agent work; writes `tap/audit.md` and seeds `tap/architecture.md` |
+| tighten-loop | `/tap:tighten-loop` | Turn this session's course-corrections into durable, repo-portable fixes |
+| qa-smoke-catalog | `/tap:qa-smoke-catalog` | Explore a web app and build `tap/smoke-tests.md` |
+| qa-smoke-run | `/tap:qa-smoke-run` | Run the smoke-test catalog in a browser; report only what's broken |
 
 ## Typical flow
 
 ```
-primitives → discovery → shape → plan → execute → QA
-   0            1          2       3       4       5
-                      product-thinker        explain (any time)
-                         (0-2)
+shape → plan → execute → QA → blast radius
+  product-thinker / strategic-thinker (before and during)      explain (any time)
 ```
 
-0. `/dev-skills:product-primitives` — break system into deep, composable primitives
-1. `/dev-skills:product-discovery` — validate whether an idea is worth building (4 risks, experiments, evidence gates)
-2. `/dev-skills:shaping-work` — define what to build → `thoughts/shapes/`
-3. `/dev-skills:write-plan` — design how to build it, layer by layer → `thoughts/plans/`
-4. `/dev-skills:execute-plan` — build it to the contract: DONE or BLOCKED, verification included
-5. `/dev-skills:qa-test` — verify in browser (execute-plan runs it for UI criteria)
+1. `/tap:shaping-work` — define what to build → `tap/shapes/`
+2. `/tap:write-plan` — design how to build it, layer by layer → `tap/plans/`
+3. `/tap:execute-plan` — build it to the contract: DONE or BLOCKED, verification included
+4. `/tap:qa-test` — verify in a browser (execute-plan runs it for UI criteria)
+5. `/tap:blast-radius` — what the change decided on its own and what it could break
 
-`/dev-skills:product-thinker` pairs with stages 0-2. `/dev-skills:explain` works at any point — on the last message, a shape, a plan, or a shipped diff — and for customer-facing work answers the questions a lead will ask (why this, abuse, data shape, failure).
+## Labs (`tap-labs`)
 
-### Working docs
+Experimental. Installed separately so these stay out of the way: `/plugin install tap-labs@teambrilliant-marketplace`.
+
+| Skill | What it does |
+| --- | --- |
+| product-primitives | System → fundamental primitives and building blocks |
+| product-discovery | Validate an idea before committing to build |
+| working-backwards | PR-FAQ to pressure-test an idea customer-first |
+| loop-check | What one workflow needs for its feedback loop to be autonomous |
+| systems-health | Dev system health via stocks, flows, feedback loops |
+| retrospective | Just-in-time retro focused on agent autonomy |
+| curate-product-context | Install and maintain `tap/product.md` |
+| alignment-atlas | Flow-by-flow alignment-diagram atlases |
+| render-doc | Render a markdown doc or docs tree to self-contained HTML |
+| dossier-publish | Publish docs to Dossier and pull them back with comments |
+
+## Panes (Claude Code only)
+
+| Plugin | What it does |
+| --- | --- |
+| `tap-pane` | Side pane with the active `tap/plans/` plan as a progress card, each tick checked against the commands that actually ran, plus the session's ★ views. `/tap-pane` opens it. |
+| `together` | Shared checklists in `tap/lists/` for you, Claude and other people. `/together:list` writes them; `/together` shows the pane. |
+
+[CONTRACTS.md](CONTRACTS.md) lists what skills must emit for the panes to read.
+
+## The `tap/` directory
 
 ```
-thoughts/
+tap/
   shapes/    shaping-work output
   plans/     write-plan output
   research/  discovery and investigations
+  lists/     together checklists
+  audit.md  architecture.md  smoke-tests.md  product.md
 ```
 
-Branch-local working context — not committed by default.
+Committed on the branch of the work it describes.
+
+Coming from `thoughts/` and `.tap/`? `scripts/migrate-repo.sh <repo>` prints what it would move; add `--apply` to do it. It never commits.
 
 ## Rollout & Rollback (continuous delivery primitives)
 
-Cross-cutting across `shaping-work`, `write-plan`, `strategic-thinker`, and `execute-plan`. The reference doc at [`skills/write-plan/references/rollout-primitives.md`](skills/write-plan/references/rollout-primitives.md) defines two mechanisms and three decisions.
+Cross-cutting across `shaping-work`, `write-plan`, `strategic-thinker`, and `execute-plan`. The reference doc at [`plugins/tap/skills/write-plan/references/rollout-primitives.md`](plugins/tap/skills/write-plan/references/rollout-primitives.md) defines two mechanisms and three decisions.
 
 **Two mechanisms:**
 
@@ -74,20 +103,18 @@ Cross-cutting across `shaping-work`, `write-plan`, `strategic-thinker`, and `exe
 
 Default is **no flag, no expand-contract**. Pick the lightest mechanism(s) that produce the launch control AND reversibility actually needed. One flag per feature, at the user-visible boundary. Bug fixes never get flags. Schemas can't be flagged — flag the consumer, expand-contract the schema.
 
-**Integration with tap-skills:** the flag system itself (PostHog / LaunchDarkly / static config / DB-driven / none) is discovered from `.tap/architecture.md`, which [`tap-skills:tap-audit`](https://github.com/teambrilliant/tap-skills) seeds during repo audit. Planners read it; they don't re-derive it on every plan.
+The flag system itself (PostHog / LaunchDarkly / static config / DB-driven / none) is discovered from `tap/architecture.md`, which `/tap:tap-audit` seeds during a repo audit. Planners read it; they don't re-derive it on every plan.
 
 ## Workflow automation
 
-Copy the template into any repo to get the full skill chain with smart routing:
+Copy the template into any repo to get the skill chain with routing:
 
 ```bash
-cp "$(claude plugin path dev-skills)/references/CLAUDE.local.template.md" ./CLAUDE.local.md
+cp "$(claude plugin path tap)/references/CLAUDE.local.template.md" ./CLAUDE.local.md
 ```
 
-This gives you:
-- Auto-routing based on existing artifacts (plans, research docs)
-- Product thinking only when requirements are fuzzy
-- Mandatory review gate before medium/large implementation
-- QA verification after implementation
-
 Then add project-specific sections (dev server, database, tools) below the workflow block.
+
+## History
+
+This repo merges `teambrilliant/dev-skills` (through 3.2.0), `teambrilliant/tap-skills` (through 0.19.0), the `thoughts` pane from `teambrilliant/claude-code-mods`, and `together`. Git history for each is preserved. The `tap-skills` changelog is at [docs/history/tap-skills-CHANGELOG.md](docs/history/tap-skills-CHANGELOG.md).

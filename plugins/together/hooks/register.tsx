@@ -7,8 +7,8 @@ import { ListPane, Overview, bandText } from './ui'
 import type { OverviewEntry } from './ui'
 
 const PANE = 'together'
-const LISTS_DIR = 'thoughts/lists'
-const LIST_PATH = /(^|\/)thoughts\/lists\/[^/]+\.md$/u
+const LISTS_DIR = 'tap/lists'
+const LIST_PATH = /(^|\/)tap\/lists\/[^/]+\.md$/u
 const SPIN_MS = 120
 
 const activeList = atom({ plugin: 'together', key: 'activeList' }, null)
@@ -22,7 +22,7 @@ async function absolute($: EngineInterface, path: string): Promise<string> {
   return path.startsWith('/') ? path : `${await $.session.root()}/${path}`
 }
 
-/** Every `.md` in the repo's `thoughts/lists/`; a missing folder is no lists. */
+/** Every `.md` in the repo's `tap/lists/`; a missing folder is no lists. */
 async function loadLists($: EngineInterface) {
   const dir = await absolute($, LISTS_DIR)
   const entries = await $.fs.list(dir).catch(() => [])

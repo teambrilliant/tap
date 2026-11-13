@@ -38,4 +38,4 @@ The standard fix for all three is a Stripe idempotency key built from the order 
 - What the user sees: the description doesn't cover that at all. There's no email on `failed`, no "update your card" flow, and nothing about what `pending` looks like in the UI. Nobody would notice any of this unless someone has monitoring on the `pending` count and the `failed` rate, and the description doesn't mention any.
 ───────────────────────────────────────────── ★
 
-The biggest gap is the double charge: no idempotency key, no row claiming, and nothing for "Stripe said ok but we crashed." Close that first. `/dev-skills:write-plan` if this is going to be built.
+The biggest gap is the double charge: no idempotency key, no row claiming, and nothing for "Stripe said ok but we crashed." Close that first. `/tap:write-plan` if this is going to be built.

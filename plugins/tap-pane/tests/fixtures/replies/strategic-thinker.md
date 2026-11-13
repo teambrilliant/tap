@@ -39,4 +39,4 @@
 
 > **Key assumption:** the pain behind this question is development speed or code entanglement, not one component with fundamentally different runtime, scaling or compliance needs. If it's the latter, extract that one piece and leave the rest as is.
 
-Next step could be `/dev-skills:shaping-work`, either to name the specific pain or to define the first Packwerk boundaries.
+Next step could be `/tap:shaping-work`, either to name the specific pain or to define the first Packwerk boundaries.

@@ -1,5 +1,16 @@
 # Changelog
 
+Versions are those of the `tap` plugin. Through 3.2.0 this was `dev-skills`; the `tap-skills` changelog through 0.19.0 is at `docs/history/tap-skills-CHANGELOG.md`.
+
+## 4.0.0
+
+- **Breaking — one repo, four plugins.** `dev-skills`, `tap-skills`, the `thoughts` pane and `together` merge into `teambrilliant/tap` as `tap` (12 core skills), `tap-labs` (10 experimental skills), `tap-pane` and `together`. Skills are invoked as `/tap:<name>` or `/tap-labs:<name>`; `/dev-skills:` and `/tap-skills:` names are gone.
+- **Breaking — `thoughts/` and `.tap/` become `tap/`.** Plans, shapes, research and lists move to `tap/plans`, `tap/shapes`, `tap/research`, `tap/lists`; `.tap/product.md`, `architecture.md`, `smoke-tests.md`, `learnings.md` and `diagrams/` move alongside them; `.tap/tap-audit.md` becomes `tap/audit.md`. `scripts/migrate-repo.sh` moves a repo (dry run by default, never commits).
+- **`tap/` is committed.** Files under it are committed on the branch of the work they describe, replacing "branch-local working context — not committed by default".
+- **Core/labs split.** Labs: `working-backwards`, `product-primitives`, `product-discovery`, `systems-health`, `retrospective`, `alignment-atlas`, `curate-product-context`, `loop-check`, `render-doc`, `dossier-publish`. Core no longer references any of them: the publish handoffs in `write-plan`, `shaping-work` and `explain`, the `product-discovery` handoff in `strategic-thinker`, and the `curate-product-context` and `retrospective` mentions are removed. `tap-audit` now carries the five-element loop rubric itself instead of deferring to `loop-check`. `write-plan` keeps its own copy of `io-function-state.md`.
+- **Panes.** The `thoughts` pane is `tap-pane` (command `/tap-pane`, reads `tap/plans/`). `together` reads `tap/lists/`. `CONTRACTS.md` gains the list grammar.
+- `scripts/check-refs.sh` fails on a `/tap:` or `/tap-labs:` reference with no matching skill, on a core reference to labs, and on any leftover old name or path.
+
 ## 3.2.0
 
 - **`execute-plan` keeps a Decisions log.** `## Deviations` and the report's Defense deltas merge into one `## Decisions` section in the plan file: every call the plan didn't make — departure or gap — one plain-words line each (scenario → what the plan said → alternative not taken → sure/unsure), trivia skipped, least sure first. The DONE report leads with it, ahead of acceptance criteria. New handoff: `/tap-skills:blast-radius` for an independent check of the log against the diff. `explain` is seeded from Decisions.

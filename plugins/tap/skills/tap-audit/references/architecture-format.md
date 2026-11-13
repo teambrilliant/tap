@@ -1,6 +1,6 @@
 # Architecture Decisions Format
 
-`.tap/architecture.md` is a single compressed file of architectural decisions optimized for agent consumption. NOT traditional ADRs.
+`tap/architecture.md` is a single compressed file of architectural decisions optimized for agent consumption. NOT traditional ADRs.
 
 ## Principles
 
@@ -59,7 +59,7 @@ Naming: snake_case, feature-scoped (e.g., `new_checkout_enabled`, `workflow_temp
 Principle: flags serve two purposes — launch control (cohort, tier, timing, %) and reversibility (fast off-switch). One flag per feature, at the user-visible boundary.
 ```
 
-The "Feature flags" decision is mandatory if any flag system exists in the codebase — downstream planning skills (dev-skills' rollout-primitives) read this section to know which provider, where flags live, and how to gate a new feature. If no flag system exists, state that explicitly: `"None — direct deploy only"` so planners don't spend cycles re-discovering its absence.
+The "Feature flags" decision is mandatory if any flag system exists in the codebase — downstream planning skills (write-plan's rollout-primitives) read this section to know which provider, where flags live, and how to gate a new feature. If no flag system exists, state that explicitly: `"None — direct deploy only"` so planners don't spend cycles re-discovering its absence.
 
 ## What NOT to include
 

@@ -166,9 +166,8 @@ This forces intellectual honesty and gives the user a clear tripwire.
 
 When analysis reaches a clear next step, offer the appropriate handoff:
 
-- Analysis reveals a product question → "Want to dig into the product angle?" → `/dev-skills:product-thinker`
-- Analysis concludes something should be built → "Want me to shape this?" → `/dev-skills:shaping-work`
-- Approach is chosen and needs technical planning → "Ready to plan the implementation?" → `/dev-skills:write-plan`
-- User needs to validate before committing → "Want to run a discovery on this?" → `/dev-skills:product-discovery`
+- Analysis reveals a product question → "Want to dig into the product angle?" → `/tap:product-thinker`
+- Analysis concludes something should be built → "Want me to shape this?" → `/tap:shaping-work`
+- Approach is chosen and needs technical planning → "Ready to plan the implementation?" → `/tap:write-plan`
 
 Pass forward: the Strategic View conclusions, explored context, key constraints, and the recommended direction — so the next skill doesn't start from scratch.

@@ -20,7 +20,7 @@ Not tied to sprints or calendars. Run a retro when there's something worth learn
 3. Analyze through the autonomy lens
 4. Capture learnings
 5. Create improvement tickets
-6. Append to .tap/learnings.md
+6. Append to tap/learnings.md
 
 ### 1. Identify the Trigger
 
@@ -44,9 +44,9 @@ gh issue list --search "[scope]"              → related issues
 ```
 
 Also read if available:
-- `.tap/system-health.md` → system metrics around the event
-- `.tap/tap-audit.md` → current readiness assessment
-- `.tap/learnings.md` → prior learnings (avoid repeating known issues)
+- `tap/system-health.md` → system metrics around the event
+- `tap/audit.md` → current readiness assessment
+- `tap/learnings.md` → prior learnings (avoid repeating known issues)
 - PR review comments → why PRs were rejected or revised
 - CI logs → what failed and how often
 
@@ -116,7 +116,7 @@ Each learning that requires work becomes a ticket. Categorize by impact on agent
 **Prevents repeat failures:**
 - Update CLAUDE.md with discovered pattern
 - Add tests for uncovered area
-- Capture decision in .tap/architecture.md
+- Capture decision in tap/architecture.md
 
 **Reduces design complexity:**
 - Split god file into focused modules
@@ -128,20 +128,20 @@ Each learning that requires work becomes a ticket. Categorize by impact on agent
 
 **Agent mode**: Create issues via `gh issue create` with label `retro-improvement`. Human reviews and prioritizes.
 
-### 6. Write to .tap/learnings.md
+### 6. Write to tap/learnings.md
 
-Append (never overwrite) to `.tap/learnings.md`. Create the file and `.tap/` directory if they don't exist.
+Append (never overwrite) to `tap/learnings.md`. Create the file and `tap/` directory if they don't exist.
 
 Use the template in [references/learnings-template.md](references/learnings-template.md).
 
-Agents read `.tap/learnings.md` before starting work. Captured learnings prevent the same mistakes from repeating across sessions.
+Agents read `tap/learnings.md` before starting work. Captured learnings prevent the same mistakes from repeating across sessions.
 
 ## Wire discoverability
 
-`.tap/learnings.md` is only read by agents that know it exists — CLAUDE.md is the only file loaded automatically. After writing, check the repo's CLAUDE.md for a `.tap/` context-index line:
+`tap/learnings.md` is only read by agents that know it exists — CLAUDE.md is the only file loaded automatically. After writing, check the repo's CLAUDE.md for a `tap/` context-index line:
 
 - **Index line exists** → make sure it mentions `learnings.md` (accumulated retro learnings); append if missing.
-- **No index line** → add one (show the diff, write on confirm): `Durable project context lives in .tap/ — learnings.md (accumulated retro learnings)[, plus any other .tap/ files present]. Read the relevant file before deciding in that area.`
+- **No index line** → add one (show the diff, write on confirm): `Durable project context lives in tap/ — learnings.md (accumulated retro learnings)[, plus any other tap/ files present]. Read the relevant file before deciding in that area.`
 - **No CLAUDE.md** → tell the user the learnings are invisible to agents until something references them; offer a minimal CLAUDE.md containing just that pointer.
 
 This is the one exception to the CLAUDE.md boundary below: a single diff-confirmed pointer line, never learnings content.
@@ -149,7 +149,7 @@ This is the one exception to the CLAUDE.md boundary below: a single diff-confirm
 ## Boundaries
 
 - Does NOT edit CLAUDE.md or AGENTS.md beyond the single discoverability pointer above (content updates become tickets — human decides)
-- Does NOT edit .tap/architecture.md (creates tickets — human decides on ADRs)
+- Does NOT edit tap/architecture.md (creates tickets — human decides on ADRs)
 - Does NOT assign blame or assess team performance
 - Does NOT follow a calendar — runs when there's something to learn from
 - ONLY analyzes events, captures learnings, creates improvement tickets

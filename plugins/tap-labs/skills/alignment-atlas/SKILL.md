@@ -1,13 +1,13 @@
 ---
 name: alignment-atlas
-description: Generate and maintain an alignment-diagram atlas — a self-contained file:// viewer in a target directory (default `.tap/diagrams/atlas/`; supports several atlases per repo, e.g. per PARA area) whose tiles open per-flow alignment grids (layers × steps, line of visibility, moments of truth, coverage honesty). Use when someone says "alignment diagram", "alignment map", "experience atlas", "map this flow", "diagram how this works end to end", "service blueprint", "Kalbach map", or wants one navigable surface showing how a product behaves / an engine runs, flow by flow. Auto-detects scaffold / map-a-flow / review mode. Outputs to `.tap/diagrams/atlas/`.
+description: Generate and maintain an alignment-diagram atlas — a self-contained file:// viewer in a target directory (default `tap/diagrams/atlas/`; supports several atlases per repo, e.g. per PARA area) whose tiles open per-flow alignment grids (layers × steps, line of visibility, moments of truth, coverage honesty). Use when someone says "alignment diagram", "alignment map", "experience atlas", "map this flow", "diagram how this works end to end", "service blueprint", "Kalbach map", or wants one navigable surface showing how a product behaves / an engine runs, flow by flow. Auto-detects scaffold / map-a-flow / review mode. Outputs to `tap/diagrams/atlas/`.
 ---
 
 # Alignment Atlas
 
 Build and maintain a navigable **alignment diagram** — what people do/think/feel aligned against what the org does backstage, across a sequence, rendered as a self-contained `file://` SPA in the repo. The value is the _elicitation_ (force every layer×step cell, name the moments of truth, draw the line of visibility, be honest about coverage); the HTML is the durable, shareable, git-committable receipt.
 
-This skill does NOT capture build plans (those live in `thoughts/plans/`), the tech stack (CLAUDE.md), or architectural decisions (`.tap/architecture.md`). It captures **how something behaves/runs, flow by flow**.
+This skill does NOT capture build plans (those live in `tap/plans/`), the tech stack (CLAUDE.md), or architectural decisions (`tap/architecture.md`). It captures **how something behaves/runs, flow by flow**.
 
 See [references/alignment-mapping.md](references/alignment-mapping.md) for the elicitation method and [references/atlas-spec.md](references/atlas-spec.md) for the in-atlas spec. The renderer is [references/renderer.html](references/renderer.html); the worked map is [references/example-map.js](references/example-map.js).
 
@@ -22,11 +22,11 @@ See [references/alignment-mapping.md](references/alignment-mapping.md) for the e
 
 ### 0. Resolve Location & Check State
 
-Atlases are **not** at a fixed path — one repo can hold several (e.g. one atlas per PARA area). Resolve the target atlas root first; the default is `.tap/diagrams/atlas/`.
+Atlases are **not** at a fixed path — one repo can hold several (e.g. one atlas per PARA area). Resolve the target atlas root first; the default is `tap/diagrams/atlas/`.
 
 1. **Explicit** — the request names a directory or area → atlas root = the path given, or `<area>/diagrams/atlas/`. E.g. "set up an atlas for the emma area" in a PARA repo → `areas/emma/diagrams/atlas/`.
 2. **Discover** — otherwise, find existing atlases (an atlas = a directory whose `index.html` contains `window.ATLAS`): `grep -rl 'window.ATLAS' --include=index.html .` then take each match's directory (plus the default root).
-   - **0 found** → Scaffold. Default root `.tap/diagrams/atlas/`; if the repo looks like PARA (top-level `areas/` or `projects/`), propose the area-local root and confirm before writing.
+   - **0 found** → Scaffold. Default root `tap/diagrams/atlas/`; if the repo looks like PARA (top-level `areas/` or `projects/`), propose the area-local root and confirm before writing.
    - **1 found** → use it, unless the request names a different one.
    - **≥2 found** → list them by title (from each atlas's `CLAUDE.md` / `window.ATLAS.title`); infer the target from the area/flow named, else ask which.
 3. Set `$ATLAS` to the resolved root, then check state:
@@ -51,9 +51,9 @@ Never overwrite a file without showing the diff and getting confirmation.
 Read before asking (skip any that don't exist):
 
 ```
-.tap/product.md          → subject, audience → candidate layers (who the flow serves)
-.tap/architecture.md     → systems/data → backstage layer content + real code anchors
-.tap/design/*brand*      → brand tokens (fonts, palette) for the config block
+tap/product.md          → subject, audience → candidate layers (who the flow serves)
+tap/architecture.md     → systems/data → backstage layer content + real code anchors
+tap/design/*brand*      → brand tokens (fonts, palette) for the config block
 README.md / CLAUDE.md    → what the product/repo is
 existing maps/*.js        → established layer preset, status vocab, axes (match them)
 ```
@@ -70,7 +70,7 @@ Interview the **frame** — the decisions baked into the config block. Present a
 2. **Home layout** — `coverage` (tiles placed in a rowAxis×colAxis matrix — most products) or `facet` (one map per row, columns are facets — e.g. topic×platform). Then the axes/facets themselves.
 3. **Layers** — the 3–5 perspectives that are the grid rows. The most important call; run the layer-choosing guidance in `references/alignment-mapping.md` (and `product-thinker` if the audience is unclear). Front-stage layers above the line of visibility, back-stage below; set `lovDefault`.
 4. **Status vocabulary** — the per-cell states for this subject (e.g. works/to-wire/stub/live, or proven/tested/unproven), each with a label + fill + border.
-5. **Brand** — from `.tap/design/*brand*` or the default.
+5. **Brand** — from `tap/design/*brand*` or the default.
 
 Then write into `$ATLAS/`: `index.html` (copy `references/renderer.html`, fill the `window.ATLAS` config block + title/meta + font links), `CLAUDE.md` (from `references/atlas-spec.md`, specialized), `maps/example.js` (from `references/example-map.js`, registry name matched), and confirm the example `<script src>` line is present. Tell the user to open `index.html` and replace the example with their first real flow (→ map-a-flow).
 
@@ -128,23 +128,23 @@ Cell value by kind: `html`=string · `quote`=string · `mot`={level,text} · `st
 
 ## Wire discoverability
 
-An atlas is only read by agents that know it exists — CLAUDE.md is the only file loaded automatically. After scaffolding (and when mapping adds the first flow), check the repo's CLAUDE.md for a `.tap/` context-index line:
+An atlas is only read by agents that know it exists — CLAUDE.md is the only file loaded automatically. After scaffolding (and when mapping adds the first flow), check the repo's CLAUDE.md for a `tap/` context-index line:
 
 - **Index line exists** → make sure it mentions the atlas path (e.g. `diagrams/atlas/` — alignment maps of how the system behaves, flow by flow); for per-area atlases, name the actual path. Append if missing.
-- **No index line** → add one (show the diff, write on confirm): `Durable project context lives in .tap/ — diagrams/atlas/ (alignment maps: how the system behaves, flow by flow)[, plus any other .tap/ files present]. Read the relevant file before deciding in that area.`
+- **No index line** → add one (show the diff, write on confirm): `Durable project context lives in tap/ — diagrams/atlas/ (alignment maps: how the system behaves, flow by flow)[, plus any other tap/ files present]. Read the relevant file before deciding in that area.`
 - **No CLAUDE.md** → tell the user the atlas is invisible to agents until something references it; offer a minimal CLAUDE.md containing just that pointer.
 
 ## Handoffs
 
-- **Unsure who the flow serves / what the layers should be** → `/dev-skills:product-thinker` (the user defines the layers).
-- **A mapped flow's acceptance rows are ready to build** → `/dev-skills:shaping-work` then `/dev-skills:write-plan` (the grid feeds shaping).
-- **First scaffold in a new repo** → recommend `/tap-skills:curate-product-context` so `.tap/product.md` can seed future layers.
+- **Unsure who the flow serves / what the layers should be** → `/tap:product-thinker` (the user defines the layers).
+- **A mapped flow's acceptance rows are ready to build** → `/tap:shaping-work` then `/tap:write-plan` (the grid feeds shaping).
+- **First scaffold in a new repo** → recommend `/tap-labs:curate-product-context` so `tap/product.md` can seed future layers.
 
 ## Boundaries
 
 - Ships ONE view per map: the layers×steps grid. `journey` / `blueprint` / `mental-model` / system-map types are reserved, not implemented (render as stubs). An atlas may host many maps of different `type`s (flow + non-flow reference grids); the home composes them (grid + strip).
-- Does NOT author `.tap/product.md`, `.tap/architecture.md`, or `thoughts/plans/`.
-- Does NOT invent a brand system — detects `.tap/design/*brand*` or uses the neutral default.
+- Does NOT author `tap/product.md`, `tap/architecture.md`, or `tap/plans/`.
+- Does NOT invent a brand system — detects `tap/design/*brand*` or uses the neutral default.
 - Does NOT overwrite any atlas file without showing the diff and getting confirmation.
 
 ## Patterns

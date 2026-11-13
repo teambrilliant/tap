@@ -15,7 +15,7 @@ SQL's `EXPLAIN` shows how a query will actually run. This does the same for work
 ## What to explain
 
 - **`/explain` with no argument, or "that didn't land" / "too dense" / "I don't get it"** → your most recent assistant message. Re-explain it only: no tools, no new information, no answering a new question. If there's no previous message, say there's nothing to explain yet.
-- **A file** (`thoughts/shapes/…`, `thoughts/plans/…`) → read it and explain what it will build and how.
+- **A file** (`tap/shapes/…`, `tap/plans/…`) → read it and explain what it will build and how.
 - **A shipped change** (branch, PR, "what we just built") → read the diff, the touched code, and the git log. Plans go stale, so explain what the code does now; where it differs from the plan, say so.
 - **Anything else** (a module, a flow, an error, a concept) → read what's needed and explain it the same way. The four questions below apply only if it's customer-facing.
 
@@ -59,9 +59,8 @@ Answer from the artifact and the code. If the answer isn't there, say so plainly
 ───── ★
 ```
 
-`[target]` is what was explained, verbatim: the file path (`thoughts/plans/…`), the branch or PR, or `last message`. Wrap the whole explanation in the opener and the `─── ★` closer exactly as shown — tools read it. No summary bullets, no summary of the summary.
+`[target]` is what was explained, verbatim: the file path (`tap/plans/…`), the branch or PR, or `last message`. Wrap the whole explanation in the opener and the `─── ★` closer exactly as shown — tools read it. No summary bullets, no summary of the summary.
 
 ## Handoffs
 
-- Gaps found in a plan → `/dev-skills:write-plan` to close them before executing.
-- Want to present it to the team → `/tap-skills:render-doc` then `/tap-skills:dossier-publish`.
+- Gaps found in a plan → `/tap:write-plan` to close them before executing.

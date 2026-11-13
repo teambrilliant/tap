@@ -1,7 +1,10 @@
 {
-  "name": "thoughts",
-  "version": "0.3.2",
-  "description": "A pane into the work: plan progress from thoughts/ and the session's pinned ★ views",
-  "author": { "name": "Team Brilliant", "url": "https://teambrilliant.ai" },
+  "name": "tap-pane",
+  "version": "0.4.0",
+  "description": "A pane into the work: plan progress from tap/plans and the session's pinned \u2605 views",
+  "author": {
+    "name": "Team Brilliant",
+    "url": "https://teambrilliant.ai"
+  },
   "types": "./types/index.d.ts"
 }

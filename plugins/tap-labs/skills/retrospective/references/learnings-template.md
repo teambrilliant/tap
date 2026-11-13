@@ -1,6 +1,6 @@
 # Learnings Template
 
-Append each retro's learnings to `.tap/learnings.md` using this format. Never overwrite prior entries.
+Append each retro's learnings to `tap/learnings.md` using this format. Never overwrite prior entries.
 
 ```markdown
 ## [YYYY-MM-DD] — [trigger: what prompted this retro]

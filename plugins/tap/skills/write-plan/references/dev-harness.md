@@ -6,7 +6,7 @@
 
 ## Layers: build along I/O · Function · State
 
-Before choosing loops, decompose the feature by *which layer* each part lives in (lens: [io-function-state.md](../../product-primitives/references/io-function-state.md)). Each layer has its own boundary:
+Before choosing loops, decompose the feature by *which layer* each part lives in (lens: [io-function-state.md](io-function-state.md)). Each layer has its own boundary:
 
 ```
 outbound I/O    3rd-party clients, outbound calls       (what you don't control)

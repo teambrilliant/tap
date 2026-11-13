@@ -1,0 +1,7 @@
+*.pdf
+eval_set.json
+private
+.wrangler/
+node_modules/
+.DS_Store
+.claude-plugin/types/

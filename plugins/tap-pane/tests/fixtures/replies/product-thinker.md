@@ -33,4 +33,4 @@ It depends on positioning, which isn't stated:
 2. Track two numbers: the share of new users who create one, and the share who complete it month after month.
 3. Interview 5–10 heavy users about how they invoice and how they chase payment. If chasing is the pain, that's the feature to build.
 
-Want me to shape the payment follow-up version, or run `/dev-skills:product-discovery` on the preset test first?
+Want me to shape the payment follow-up version, or run `/tap-labs:product-discovery` on the preset test first?

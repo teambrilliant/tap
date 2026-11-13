@@ -8,20 +8,20 @@ import type { Evidence } from './ui'
 import { extractViews, hashText, pinViews, shrinkPinned } from './views'
 import type { View } from './views'
 
-const PANE = 'thoughts'
-const PLAN_PATH = /(^|\/)thoughts\/plans\/[^/]+\.md$/u
-const OUTSIDE_THOUGHTS = (path: string) => !/(^|\/)thoughts\//u.test(path)
+const PANE = 'tap-pane'
+const PLAN_PATH = /(^|\/)tap\/plans\/[^/]+\.md$/u
+const OUTSIDE_TAP = (path: string) => !/(^|\/)tap\//u.test(path)
 /** `t: ` the engine draws before a plain Button with a hotkey. */
 const TOGGLE_HOTKEY_CELLS = 3
 
-const pins = atom({ plugin: 'thoughts', key: 'pins' }, [])
-const isPaneShown = atom({ plugin: 'thoughts', key: 'isPaneShown' }, false)
-const isSeeded = atom({ plugin: 'thoughts', key: 'isSeeded' }, false)
-const activePlan = atom({ plugin: 'thoughts', key: 'activePlan' }, null)
-const planText = atom({ plugin: 'thoughts', key: 'planText' }, null)
-const baselineTicks = atom({ plugin: 'thoughts', key: 'baselineTicks' }, [])
-const ledger = atom({ plugin: 'thoughts', key: 'ledger' }, [])
-const editSeq = atom({ plugin: 'thoughts', key: 'editSeq' }, 0)
+const pins = atom({ plugin: 'tap-pane', key: 'pins' }, [])
+const isPaneShown = atom({ plugin: 'tap-pane', key: 'isPaneShown' }, false)
+const isSeeded = atom({ plugin: 'tap-pane', key: 'isSeeded' }, false)
+const activePlan = atom({ plugin: 'tap-pane', key: 'activePlan' }, null)
+const planText = atom({ plugin: 'tap-pane', key: 'planText' }, null)
+const baselineTicks = atom({ plugin: 'tap-pane', key: 'baselineTicks' }, [])
+const ledger = atom({ plugin: 'tap-pane', key: 'ledger' }, [])
+const editSeq = atom({ plugin: 'tap-pane', key: 'editSeq' }, 0)
 
 async function readOrNull($: EngineInterface, path: string): Promise<string | null> {
   try {
@@ -52,7 +52,7 @@ async function pinAll($: EngineInterface, views: readonly View[]) {
 
 /** Opened unasked (first pin) it may wait undrawn on a narrow terminal; shrinking follows what's actually on screen. */
 async function openPane($: EngineInterface) {
-  await $.ui.open({ id: PANE, title: 'thoughts' })
+  await $.ui.open({ id: PANE, title: 'tap-pane' })
   await refreshPaneShown($)
 }
 
@@ -110,8 +110,8 @@ const textOf = (blocks: readonly { type: string; text?: string }[]) =>
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     await $.command.register({
-      name: 'thoughts',
-      description: 'Open the thoughts pane · /thoughts plan <path> picks the plan',
+      name: 'tap-pane',
+      description: 'Open the tap pane · /tap-pane plan <path> picks the plan',
     })
     if (!(await read($, isSeeded))) {
       const messages = await $.session.messages()
@@ -135,7 +135,7 @@ export const register: Register = on => {
     return next(e)
   })
 
-  on('command.run', { command: 'thoughts' }, async ($, e) => {
+  on('command.run', { command: 'tap-pane' }, async ($, e) => {
     const planArg = /^plan\s+(\S+)/u.exec(e.args.trim())?.[1]
     if (planArg !== undefined) {
       await loadPlan($, planArg)
@@ -177,7 +177,7 @@ export const register: Register = on => {
     const ran = await next(e)
     if (ran.deny === undefined && ran.isError !== true) {
       if (PLAN_PATH.test(e.file_path)) await loadPlan($, e.file_path)
-      if (OUTSIDE_THOUGHTS(e.file_path)) await update($, editSeq, seq => seq + 1)
+      if (OUTSIDE_TAP(e.file_path)) await update($, editSeq, seq => seq + 1)
       await refreshTargets($)
     }
     return ran
@@ -187,7 +187,7 @@ export const register: Register = on => {
     const ran = await next(e)
     if (ran.deny === undefined && ran.isError !== true) {
       if (PLAN_PATH.test(e.file_path)) await loadPlan($, e.file_path)
-      if (OUTSIDE_THOUGHTS(e.file_path)) await update($, editSeq, seq => seq + 1)
+      if (OUTSIDE_TAP(e.file_path)) await update($, editSeq, seq => seq + 1)
       await refreshTargets($)
     }
     return ran
@@ -227,7 +227,7 @@ export const register: Register = on => {
           columns,
           actions: {
             discard: kind => void update($, pins, current => current.filter(pin => pin.kind !== kind)),
-            reExplain: target => void $.prompt.fill({ text: `/dev-skills:explain ${target}` }),
+            reExplain: target => void $.prompt.fill({ text: `/tap:explain ${target}` }),
             toggle: kind =>
               void update($, pins, current =>
                 current.map((pin, at) => (pin.kind === kind ? { ...pin, fold: isOpen(pin, at === current.length - 1) ? 'closed' : 'open' } : pin)),

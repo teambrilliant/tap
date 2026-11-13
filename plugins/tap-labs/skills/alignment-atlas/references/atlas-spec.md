@@ -1,6 +1,6 @@
 # <Atlas name>
 
-Source of truth for **<what this atlas captures, one line>**. One surface: a <rowAxis>×<colAxis> coverage home (`index.html#/`) whose tiles open per-flow alignment grids (maps). Build detail does NOT live here — that's `thoughts/plans/`.
+Source of truth for **<what this atlas captures, one line>**. One surface: a <rowAxis>×<colAxis> coverage home (`index.html#/`) whose tiles open per-flow alignment grids (maps). Build detail does NOT live here — that's `tap/plans/`.
 
 ## Architecture
 

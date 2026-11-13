@@ -1,6 +1,6 @@
 ---
 name: systems-health
-description: Measure the health of a software development system using stocks, flows, and feedback loops. Use when someone says "systems health", "how's the project going", "health check", "measure our process", "are we shipping fast enough", "what's slowing us down", or for periodic check-ins on development velocity and quality. Pulls data from git, GitHub, and CI to diagnose what's working and what's broken. Outputs to .tap/system-health.md.
+description: Measure the health of a software development system using stocks, flows, and feedback loops. Use when someone says "systems health", "how's the project going", "health check", "measure our process", "are we shipping fast enough", "what's slowing us down", or for periodic check-ins on development velocity and quality. Pulls data from git, GitHub, and CI to diagnose what's working and what's broken. Outputs to tap/system-health.md.
 ---
 
 # Systems Health
@@ -15,7 +15,7 @@ Diagnose the development system. Measure stocks, flows, and feedback loops. Find
 4. Assess feedback loops
 5. Measure complexity signals
 6. Diagnose and prescribe
-7. Write .tap/system-health.md
+7. Write tap/system-health.md
 
 ### 1. Collect Data
 
@@ -33,8 +33,8 @@ gh issue list --state open                        → current open issues
 ```
 
 Also read if available:
-- `.tap/tap-audit.md` → prior assessment context
-- `.tap/system-health.md` → prior health snapshot for trend comparison
+- `tap/audit.md` → prior assessment context
+- `tap/system-health.md` → prior health snapshot for trend comparison
 - Test runner output → test count, coverage
 
 **Time windows**: Default to 30-day snapshot with 90-day trend. Use `--since` flag on all git/gh commands.
@@ -134,20 +134,20 @@ Prioritize by: most impact for least effort.
 
 ### 7. Write Output
 
-Write to `.tap/system-health.md` using the template in [references/system-health-template.md](references/system-health-template.md).
+Write to `tap/system-health.md` using the template in [references/system-health-template.md](references/system-health-template.md).
 
-If prior `.tap/system-health.md` exists, compare trends. Call out what improved and what worsened since last measurement.
+If prior `tap/system-health.md` exists, compare trends. Call out what improved and what worsened since last measurement.
 
 **Human mode**: Walk through findings. Start with the headline ("your system is healthy / has 2 problems / is backing up"). Show the data. Explain the diagnosis. Propose the cheapest fix. Ask: "Want to dig into any of these?"
 
-**Agent mode**: Write `.tap/system-health.md` silently. If run as part of a `/retrospective`, feed findings into the retro.
+**Agent mode**: Write `tap/system-health.md` silently. If run as part of a `/retrospective`, feed findings into the retro.
 
 ## Wire discoverability
 
-`.tap/system-health.md` is only read by agents that know it exists — CLAUDE.md is the only file loaded automatically. After writing, check the repo's CLAUDE.md for a `.tap/` context-index line:
+`tap/system-health.md` is only read by agents that know it exists — CLAUDE.md is the only file loaded automatically. After writing, check the repo's CLAUDE.md for a `tap/` context-index line:
 
 - **Index line exists** → make sure it mentions `system-health.md` (delivery health check-in); append if missing.
-- **No index line** → add one (show the diff, write on confirm): `Durable project context lives in .tap/ — system-health.md (delivery health check-in)[, plus any other .tap/ files present]. Read the relevant file before deciding in that area.`
+- **No index line** → add one (show the diff, write on confirm): `Durable project context lives in tap/ — system-health.md (delivery health check-in)[, plus any other tap/ files present]. Read the relevant file before deciding in that area.`
 - **No CLAUDE.md** → tell the user the artifact is invisible to agents until something references it; offer a minimal CLAUDE.md containing just that pointer.
 
 ## Boundaries

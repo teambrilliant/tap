@@ -31,8 +31,8 @@ Determine what to analyze (in priority order):
 Also read:
 - PR description / commit messages for stated intent
 - Linked ticket/issue if referenced
-- The plan and shape behind the change, if any — `thoughts/plans/`, `thoughts/shapes/` matching the branch or PR topic. The plan's `## Decisions` section is the implementer's own log of calls the plan didn't make.
-- `.tap/tap-audit.md` for environment URLs (needed for verification checklist)
+- The plan and shape behind the change, if any — `tap/plans/`, `tap/shapes/` matching the branch or PR topic. The plan's `## Decisions` section is the implementer's own log of calls the plan didn't make.
+- `tap/audit.md` for environment URLs (needed for verification checklist)
 
 ### 2. Summarize Intent
 
@@ -140,7 +140,7 @@ Include:
 - **Happy paths**: Core flows through changed code
 - **Edge cases**: Error states, empty states, boundary inputs
 - **Regressions**: Flows through UNCHANGED code that depends on changed code
-- **Environment-specific**: If `.tap/tap-audit.md` has URLs, reference specific environments
+- **Environment-specific**: If `tap/audit.md` has URLs, reference specific environments
 - **Blind spot items**: For MEDIUM/HIGH, items surfaced by blind spot analysis
 
 Prioritize the checklist: most likely to break first, most damaging if broken second. The "why" lives in "What could break" — don't repeat it per item.

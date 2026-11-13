@@ -7,7 +7,7 @@ import { world } from './world'
 import type { World } from './world'
 
 const reply = (name: string) => REPLIES[name] ?? ''
-const PANE_PROPS: RenderPropsOf['Pane'] = { title: 'thoughts', isFocused: false, bodyColumns: 72, placement: 'dock', scroll: { offset: 0, bodyRows: 40 }, view: {} }
+const PANE_PROPS: RenderPropsOf['Pane'] = { title: 'tap-pane', isFocused: false, bodyColumns: 72, placement: 'dock', scroll: { offset: 0, bodyRows: 40 }, view: {} }
 const BAND_PROPS: RenderPropsOf['AbovePrompt'] = { hasSurvey: false, isWorking: false, maxRows: 3, bodyColumns: 100, scroll: { offset: 0, bodyRows: 3 }, view: {} }
 const EXPLAIN = (target: string) => `★ Explain · ${target} ─────────\n drawing\n words\n───────────── ★`
 
@@ -15,10 +15,10 @@ async function start($: Engine) {
   await $.session.start({ surface: 'terminal', isInteractive: true, cwd: '/work' })
 }
 
-const mountPane = ($: Engine) => $.ui.mount({ plugin: 'thoughts', surface: 'terminal', component: 'Pane', requestId: 'thoughts', props: PANE_PROPS })
-const mountBand = ($: Engine) => $.ui.mount({ plugin: 'thoughts', surface: 'terminal', component: 'AbovePrompt', props: BAND_PROPS })
+const mountPane = ($: Engine) => $.ui.mount({ plugin: 'tap-pane', surface: 'terminal', component: 'Pane', requestId: 'tap-pane', props: PANE_PROPS })
+const mountBand = ($: Engine) => $.ui.mount({ plugin: 'tap-pane', surface: 'terminal', component: 'AbovePrompt', props: BAND_PROPS })
 const mountMessage = ($: Engine, text: string) =>
-  $.ui.mount({ plugin: 'thoughts', surface: 'terminal', component: 'AssistantMessage', props: { text, isFirstOfReply: true } })
+  $.ui.mount({ plugin: 'tap-pane', surface: 'terminal', component: 'AssistantMessage', props: { text, isFirstOfReply: true } })
 
 const textOf = async (ui: { findAll: (q: { type: 'Text' }) => Promise<{ text?: string }[]> }) =>
   (await ui.findAll({ type: 'Text' })).map(found => found.text ?? '').join('\n')
@@ -70,7 +70,7 @@ describe('pinned views', () => {
   test('while the pane is not shown, pinned blocks draw in full', async ($, on) => {
     mock.clock(on)
     const w: World = world(on, new Map(), [{ role: 'assistant', text: reply('multi') }])
-    w.hidden.add('thoughts')
+    w.hidden.add('tap-pane')
     await start($)
     const message = await mountMessage($, reply('multi'))
     expect(await textOf(message)).toContain('- Build it: the pain is real')
@@ -88,17 +88,17 @@ describe('pinned views', () => {
 
   test('an explain pin goes stale when its file changes; [r] fills the prompt', async ($, on) => {
     mock.clock(on)
-    const files = new Map([['thoughts/plans/a.md', 'v1']])
-    const w = world(on, files, [{ role: 'assistant', text: EXPLAIN('thoughts/plans/a.md') }])
-    on('tool.call', () => ({ result: { filePath: 'thoughts/plans/a.md' }, text: 'ok' }))
+    const files = new Map([['tap/plans/a.md', 'v1']])
+    const w = world(on, files, [{ role: 'assistant', text: EXPLAIN('tap/plans/a.md') }])
+    on('tool.call', () => ({ result: { filePath: 'tap/plans/a.md' }, text: 'ok' }))
     await start($)
     const pane = await mountPane($)
     expect(await textOf(pane)).not.toContain('⚠ changed')
-    files.set('thoughts/plans/a.md', 'v2')
-    await $.tool.call({ tool: 'Edit', file_path: 'thoughts/plans/a.md', old_string: 'v1', new_string: 'v2' })
+    files.set('tap/plans/a.md', 'v2')
+    await $.tool.call({ tool: 'Edit', file_path: 'tap/plans/a.md', old_string: 'v1', new_string: 'v2' })
     expect(await textOf(pane)).toContain('⚠ changed')
     await pane.press({ key: 'r-Explain' })
-    expect(w.filled).toEqual(['/dev-skills:explain thoughts/plans/a.md'])
+    expect(w.filled).toEqual(['/tap:explain tap/plans/a.md'])
   })
 })
 
@@ -106,7 +106,7 @@ describe('band', () => {
   test('pins hidden: the band names them and says how to see them', async ($, on) => {
     mock.clock(on)
     const w = world(on, new Map(), [{ role: 'assistant', text: reply('multi') }])
-    w.hidden.add('thoughts')
+    w.hidden.add('tap-pane')
     await start($)
     expect(await bandTextOf(await mountBand($))).toBe('★ 2 pinned: Product, Strategic')
   })
@@ -114,28 +114,28 @@ describe('band', () => {
   test('the band is a toggle (t, or a click): one press opens the pane, the same press closes it', async ($, on) => {
     mock.clock(on)
     const w = world(on, new Map(), [{ role: 'assistant', text: reply('multi') }])
-    w.hidden.add('thoughts')
+    w.hidden.add('tap-pane')
     await start($)
     const band = await mountBand($)
     expect((await band.find({ key: 'toggle-pane' }))?.props.hotkey).toBe('t')
-    w.hidden.delete('thoughts')
+    w.hidden.delete('tap-pane')
     await band.press({ key: 'toggle-pane' })
-    expect(w.placed.has('thoughts')).toBe(true)
+    expect(w.placed.has('tap-pane')).toBe(true)
     expect(await bandTextOf(band)).toBe('★ 2 pinned')
     await band.press({ key: 'toggle-pane' })
-    expect(w.placed.has('thoughts')).toBe(false)
+    expect(w.placed.has('tap-pane')).toBe(false)
     expect(await bandTextOf(band)).toBe('★ 2 pinned: Product, Strategic')
   })
 
   test('pane behind another tab: a press closes and opens it again, since only a fresh open is shown', async ($, on) => {
     mock.clock(on)
     const w = world(on, new Map(), [{ role: 'assistant', text: reply('multi') }])
-    w.hidden.add('thoughts')
+    w.hidden.add('tap-pane')
     await start($)
     const band = await mountBand($)
     await band.press({ key: 'toggle-pane' })
-    expect(w.closed).toEqual(['thoughts'])
-    expect(w.placed.has('thoughts')).toBe(true)
+    expect(w.closed).toEqual(['tap-pane'])
+    expect(w.placed.has('tap-pane')).toBe(true)
   })
 
   test('stacks its line under what other mods draw, never replaces it', async ($, on) => {
@@ -163,16 +163,16 @@ describe('plan view', () => {
 
   test('reading a plan makes it active: band and pane show progress; prior ticks read as done earlier', async ($, on) => {
     mock.clock(on)
-    world(on, new Map([['thoughts/plans/billing.md', PLANS.midrun]]))
+    world(on, new Map([['tap/plans/billing.md', PLANS.midrun]]))
     on('tool.call', () => ({ result: { type: 'text' }, text: 'ok' }))
     await start($)
-    await $.tool.call({ tool: 'Read', file_path: 'thoughts/plans/billing.md' })
+    await $.tool.call({ tool: 'Read', file_path: 'tap/plans/billing.md' })
     expect(await bandTextOf(await mountBand($))).toMatch(/^◑ Billing invoices · P2 Function · 3\/7/)
     const pane = await textOf(await mountPane($))
     expect(pane).toContain('✓ Stripe client + table')
     expect(pane).toContain('▾ syncInvoices')
     expect(pane).toContain('○ Billing page')
-    expect(pane).toContain('thoughts/plans/billing.md')
+    expect(pane).toContain('tap/plans/billing.md')
     expect(pane).toContain('3 earlier')
     expect(pane).toContain('✓  pnpm vitest sync-invoices.test.ts')
     expect(pane).toContain('○  pnpm vitest sync-replay.test.ts   ← now')
@@ -180,16 +180,16 @@ describe('plan view', () => {
 
   test('a plan finished while watched reads Complete · 4 of 4 verified, with a ● per check', async ($, on) => {
     mock.clock(on)
-    const files = new Map([['thoughts/plans/tick-plan.md', PLANS.tick]])
+    const files = new Map([['tap/plans/tick-plan.md', PLANS.tick]])
     world(on, files)
     on('tool.call', () => ({ result: { type: 'text' }, text: 'ok' }))
     await start($)
-    await $.tool.call({ tool: 'Read', file_path: 'thoughts/plans/tick-plan.md' })
+    await $.tool.call({ tool: 'Read', file_path: 'tap/plans/tick-plan.md' })
     for (const command of ['test -f notes.txt', 'grep -q one notes.txt', 'grep -q two notes.txt', `test "$(wc -l < notes.txt | tr -d ' ')" = 2`]) {
       await $.tool.call({ tool: 'Bash', command })
     }
-    files.set('thoughts/plans/tick-plan.md', PLANS.tick.replaceAll('- [ ]', '- [x]'))
-    await $.tool.call({ tool: 'Edit', file_path: 'thoughts/plans/tick-plan.md', old_string: '- [ ]', new_string: '- [x]' })
+    files.set('tap/plans/tick-plan.md', PLANS.tick.replaceAll('- [ ]', '- [x]'))
+    await $.tool.call({ tool: 'Edit', file_path: 'tap/plans/tick-plan.md', old_string: '- [ ]', new_string: '- [x]' })
     const pane = await textOf(await mountPane($))
     expect(pane).toContain('Complete · ')
     expect(pane).toContain('4 of 4 verified')
@@ -198,20 +198,20 @@ describe('plan view', () => {
 
   test('the strip shows every check in the band and the card, phases two spaces apart', async ($, on) => {
     mock.clock(on)
-    world(on, new Map([['thoughts/plans/billing.md', PLANS.midrun]]))
+    world(on, new Map([['tap/plans/billing.md', PLANS.midrun]]))
     on('tool.call', () => ({ result: { type: 'text' }, text: 'ok' }))
     await start($)
-    await $.tool.call({ tool: 'Read', file_path: 'thoughts/plans/billing.md' })
+    await $.tool.call({ tool: 'Read', file_path: 'tap/plans/billing.md' })
     expect(await bandTextOf(await mountBand($))).toMatch(/3\/7 · ▖▖  ▖▁  ▁  ▁▁$/)
     expect(await textOf(await mountPane($))).toContain('\n  ▖▖  ▖▁  ▁  ▁▁\n')
   })
 
   test('a failing check makes the border heavy and counts the failures in a row', async ($, on) => {
     mock.clock(on)
-    world(on, new Map([['thoughts/plans/billing.md', PLANS.midrun]]))
+    world(on, new Map([['tap/plans/billing.md', PLANS.midrun]]))
     on('tool.call', ($, e) => (e.tool === 'Bash' ? { isError: true, result: 'Exit code 1', text: 'Exit code 1' } : { result: { type: 'text' }, text: 'ok' }))
     await start($)
-    await $.tool.call({ tool: 'Read', file_path: 'thoughts/plans/billing.md' })
+    await $.tool.call({ tool: 'Read', file_path: 'tap/plans/billing.md' })
     const pane = await mountPane($)
     const borderOf = async () => (await pane.find({ key: 'plan-card' }))?.props.borderStyle
     expect(await borderOf()).toBe('round')
@@ -224,10 +224,10 @@ describe('plan view', () => {
 
   test('a failing run that is no plan check raises no alarm anywhere', async ($, on) => {
     mock.clock(on)
-    world(on, new Map([['thoughts/plans/billing.md', PLANS.midrun]]))
+    world(on, new Map([['tap/plans/billing.md', PLANS.midrun]]))
     on('tool.call', ($, e) => (e.tool === 'Bash' ? { isError: true, result: 'Exit code 1', text: 'Exit code 1' } : { result: { type: 'text' }, text: 'ok' }))
     await start($)
-    await $.tool.call({ tool: 'Read', file_path: 'thoughts/plans/billing.md' })
+    await $.tool.call({ tool: 'Read', file_path: 'tap/plans/billing.md' })
     await $.tool.call({ tool: 'Bash', command: 'rg nope' })
     const pane = await mountPane($)
     expect((await pane.find({ key: 'plan-card' }))?.props.borderStyle).toBe('round')
@@ -238,7 +238,7 @@ describe('plan view', () => {
 
   test('a real run: early checks go stale under later edits, and a fresh Final Verification still proves it done', async ($, on) => {
     mock.clock(on)
-    const path = 'thoughts/plans/real.md'
+    const path = 'tap/plans/real.md'
     const planText = `${PLANS.tick}\n## Final Verification\n\n- [ ] \`bun test\` → pass\n`
     const files = new Map([[path, planText]])
     world(on, files)
@@ -260,12 +260,12 @@ describe('plan view', () => {
 
   test('a passing run → ●, an edit after it → ◌, a failing run → ✗', async ($, on) => {
     mock.clock(on)
-    const files = new Map([['thoughts/plans/billing.md', PLANS.midrun]])
+    const files = new Map([['tap/plans/billing.md', PLANS.midrun]])
     world(on, files)
     let isFailing = false
     on('tool.call', ($, e) => (isFailing && e.tool === 'Bash' ? { isError: true, result: 'Exit code 1', text: 'Exit code 1' } : { result: { type: 'text' }, text: 'ok' }))
     await start($)
-    await $.tool.call({ tool: 'Read', file_path: 'thoughts/plans/billing.md' })
+    await $.tool.call({ tool: 'Read', file_path: 'tap/plans/billing.md' })
     await $.tool.call({ tool: 'Bash', command: 'pnpm vitest sync-invoices.test.ts' })
     const pane = await mountPane($)
     expect(await textOf(pane)).toContain('●  pnpm vitest sync-invoices.test.ts')

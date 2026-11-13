@@ -1,6 +1,6 @@
 # Product Context Format
 
-`.tap/product.md` is a single compressed file of product-strategic context optimized for human + agent consumption. Vision, what we build, audience, current focus, bets, non-goals — the cathedral down to the walls. NOT a feature roadmap, persona doc, or market analysis.
+`tap/product.md` is a single compressed file of product-strategic context optimized for human + agent consumption. Vision, what we build, audience, current focus, bets, non-goals — the cathedral down to the walls. NOT a feature roadmap, persona doc, or market analysis.
 
 ## Principles
 
@@ -9,7 +9,7 @@
 - **3-6 lines per section** — capture the principle, not the backstory (exception: `What we build` allows up to 3 sentences for compound value props)
 - **≤ 80 lines total** — if it's longer, compress
 - **No dates, status, authors, personas** — product context, not meeting notes
-- **Never duplicates CLAUDE.md or `.tap/architecture.md`** — stack, patterns, system decisions live there
+- **Never duplicates CLAUDE.md or `tap/architecture.md`** — stack, patterns, system decisions live there
 
 ## Format
 
@@ -65,7 +65,7 @@ Success signal: new customer repo reaches "ready for agent work" in under 15 min
 ## Bets
 - Plugin marketplaces as primary distribution — fewer moving parts than scripts — kill: two engagements in a row where install still needs manual steps
 - Each skill carries its own template/reference — no shared asset layer to version — kill: the same reference gets copy-edited in 3+ skills
-- `.tap/` project memory as the contract between skills — one directory, known files — kill: agents keep missing the files because nothing points at them
+- `tap/` project memory as the contract between skills — one directory, known files — kill: agents keep missing the files because nothing points at them
 
 ## Non-goals
 Not building a SaaS, not hosting customer data, not a CI enforcement layer this quarter.
@@ -77,9 +77,9 @@ Principle: the skill surface is the product; infrastructure is a distraction fro
 - Feature roadmaps or ticket lists (belongs in issue tracker)
 - Personas, jobs-to-be-done frameworks, competitor matrices (belongs in discovery docs)
 - Team structure, OKRs, hiring plans (not product context — keep them wherever the org plans them)
-- Anything already in `CLAUDE.md` (stack, conventions, commands) or `.tap/architecture.md` (system decisions)
+- Anything already in `CLAUDE.md` (stack, conventions, commands) or `tap/architecture.md` (system decisions)
 - Dates, authors, status, revision history
 
 ## When to write
 
-Via `/tap-skills:curate-product-context`. Do not author by hand after the skill exists — the skill's review/refresh modes enforce pruning and length.
+Via `/tap-labs:curate-product-context`. Do not author by hand after the skill exists — the skill's review/refresh modes enforce pruning and length.

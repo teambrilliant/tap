@@ -182,7 +182,7 @@ The flag system varies wildly across codebases. Discover it; don't assume it.
 
 Lookup order:
 
-1. Read `.tap/architecture.md` for a feature-flags section.
+1. Read `tap/architecture.md` for a feature-flags section.
 2. Fall back: grep for known imports (`posthog`, `launchdarkly`, `unleash`, `flagsmith`) or config patterns (`flags.ts`, `feature-flags.yml`, env var conventions like `NEXT_PUBLIC_FEATURE_*`, DB-driven `feature_flags` table, per-cohort static config files).
 3. If none found: ask the user or surface "no flag system detected — name one or treat this as direct deploy."
 
@@ -256,7 +256,7 @@ Reversibility mechanism: expand-contract alone.
 Mechanism: flag alone.
   No contract changing. New UI alongside old, gated by `new_checkout_enabled`.
   Flag purpose: BOTH — launch (% rollout to de-risk) AND reversibility (critical path).
-  Flag system: PostHog (per .tap/architecture.md).
+  Flag system: PostHog (per tap/architecture.md).
   Gate location: checkout route.
   Lifecycle: short-lived. Remove once 100% rolled out and trusted for 30 days.
   Rollback: flag flip.
@@ -269,7 +269,7 @@ Mechanism: flag alone.
   No contract changing. No critical-path risk (well-tested, additive UI).
   Flag purpose: LAUNCH only — tier-gating (Pro) AND timing (announcement).
   Flag: `workflow_templates_pro` — gates by tier (permanent) AND by date (until launch).
-  Flag system: per .tap/architecture.md.
+  Flag system: per tap/architecture.md.
   Gate location: Pro-plan sidebar entry + /templates route.
   Lifecycle: long-lived. Tier gate stays; timing gate self-expires after Tuesday.
   Note: a risk-only planner would conclude "no flag needed" here and miss the launch need entirely.

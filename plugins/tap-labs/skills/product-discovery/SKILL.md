@@ -137,7 +137,7 @@ Evidence gates protect the team from two failure modes:
 
 ### 6. Write the Discovery Plan
 
-Output a structured plan. Save to `thoughts/research/YYYY-MM-DD-discovery-[descriptive-name].md`.
+Output a structured plan. Save to `tap/research/YYYY-MM-DD-discovery-[descriptive-name].md`.
 
 ```markdown
 # Discovery: [idea name]
@@ -174,7 +174,7 @@ Output a structured plan. Save to `thoughts/research/YYYY-MM-DD-discovery-[descr
 [Which experiments to run first, which can run in parallel, dependencies between them]
 
 ## What Happens Next
-- **If discovery succeeds:** Hand off to `/dev-skills:shaping-work` for detailed work definition
+- **If discovery succeeds:** Hand off to `/tap:shaping-work` for detailed work definition
 - **If discovery says pivot:** [what the alternative direction looks like]
 - **If discovery says stop:** [document what we learned for future reference]
 ```

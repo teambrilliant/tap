@@ -10,7 +10,7 @@ Deadline: 2026-10-20
 
 ## Website
 - [x] @claude Audit current site copy · done 2026-10-02
-  → thoughts/research/emma-site-audit.md
+  → tap/research/emma-site-audit.md
 - [x] @me Pick v3 positioning · done 2026-10-03
 - [~] @claude Update site to v3
   draft: site/copy-v3.md
@@ -22,5 +22,5 @@ Deadline: 2026-10-20
 - [ ] @claude Shortlist 10 companies
 - [ ] @me Send touch 1 email
 - [x] @claude Draft touch 1 email · done 2026-10-08
-  → thoughts/research/otp-touch1.md
+  → tap/research/otp-touch1.md
 - [x] @me Update LinkedIn headline · done 2026-10-07

@@ -1,4 +1,4 @@
-// Regenerate with: bun mods/thoughts/scripts/build-fixtures.ts
+// Regenerate with: bun plugins/tap-pane/scripts/build-fixtures.ts
 // The test kit runs with no fs, so fixtures ship as a generated module.
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'

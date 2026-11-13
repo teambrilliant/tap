@@ -1,6 +1,6 @@
 ---
 name: qa-smoke-run
-description: Execute the smoke-test catalog at `.tap/smoke-tests.md` against a running web app in a browser, then report only what's broken. Use whenever someone says "run smoke tests", "run the smoke test catalog", "execute smoke tests", "smoke test the release", "qa smoke run", or wants to verify a release or deploy against the app before shipping. This is the per-release regression run. Pairs with `qa-smoke-catalog`, which authors the catalog this skill consumes. Reports pass/fail in chat; saves failure artifacts to `.tap/qa-runs/<timestamp>/`.
+description: Execute the smoke-test catalog at `tap/smoke-tests.md` against a running web app in a browser, then report only what's broken. Use whenever someone says "run smoke tests", "run the smoke test catalog", "execute smoke tests", "smoke test the release", "qa smoke run", or wants to verify a release or deploy against the app before shipping. This is the per-release regression run. Pairs with `qa-smoke-catalog`, which authors the catalog this skill consumes. Reports pass/fail in chat; saves failure artifacts to `tap/qa-runs/<timestamp>/`.
 ---
 
 # QA Smoke Run
@@ -9,7 +9,7 @@ Execute the smoke-test catalog and report. You are a QA engineer running the rel
 
 ## Input
 
-`.tap/smoke-tests.md` in the target repo. If it doesn't exist, stop and point the human at `qa-smoke-catalog` to author one — there is nothing to run without it.
+`tap/smoke-tests.md` in the target repo. If it doesn't exist, stop and point the human at `qa-smoke-catalog` to author one — there is nothing to run without it.
 
 The catalog has three structural parts:
 - `## Setup` — run configuration. Read it first and honor it.
@@ -65,7 +65,7 @@ Smoke tests: 11/14 PASS, 3 FAIL (4m 38s)
   Failed at: "At least one downline row renders with a non-empty Sponsor"
   Symptom: Sponsor column rendered "-" for all rows
   Likely: Exigo query returned empty (saw 504 on /api/team-tree)
-  Artifacts: .tap/qa-runs/2026-05-14-1730/my-team.png, console.log
+  Artifacts: tap/qa-runs/2026-05-14-1730/my-team.png, console.log
 ```
 
 Each failure block contains: the case name, the failing bullet **quoted verbatim**, the observed symptom, an optional one-line hypothesis *only when it's genuinely obvious from what you saw*, and the artifact paths. Don't speculate beyond the evidence — a wrong hypothesis costs the human more than no hypothesis.
@@ -80,12 +80,12 @@ Resolution: Re-authenticate, then re-run.
 
 ## Artifacts
 
-Save artifacts **only for failures**, never for passes — a clean run should leave no trace on disk. For each failed case, write to `.tap/qa-runs/<timestamp>/`:
+Save artifacts **only for failures**, never for passes — a clean run should leave no trace on disk. For each failed case, write to `tap/qa-runs/<timestamp>/`:
 - A screenshot at the point of failure.
 - The console messages captured during that case.
 - A network log (HAR) when a network issue is implicated in the failure.
 
-A fully passing run produces zero files. That's intentional: it keeps the repo clean, and it makes the mere presence of a `.tap/qa-runs/` entry a meaningful signal that something went wrong.
+A fully passing run produces zero files. That's intentional: it keeps the repo clean, and it makes the mere presence of a `tap/qa-runs/` entry a meaningful signal that something went wrong.
 
 ## The contract with qa-smoke-catalog
 

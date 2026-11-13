@@ -27,7 +27,7 @@ Synthetic mid-run plan: Phase 1 done, Phase 2 half ticked, Final has a prose ite
 **Layer:** UI  ·  **Proves:** the page lists invoices
 
 ### Phase Checks
-- [ ] `/dev-skills:qa-test` on `/billing` → pass
+- [ ] `/tap:qa-test` on `/billing` → pass
 
 ## Final Verification
 - [ ] `pnpm test`, `pnpm typecheck`, `pnpm lint` → clean

@@ -1,6 +1,6 @@
 ---
 name: qa-test
-description: Browser-based QA verification after any implementation. Use when someone says "QA this", "test this in browser", "verify the feature", "qa test", "browser test", or after /dev-skills:execute-plan to verify acceptance criteria in a real browser. Opens Chrome via MCP, exercises each acceptance criterion, verifies via DOM snapshots, and reports pass/fail. The "closer" for every implementation — proof it works, not just that tests pass.
+description: Browser-based QA verification after any implementation. Use when someone says "QA this", "test this in browser", "verify the feature", "qa test", "browser test", or after /tap:execute-plan to verify acceptance criteria in a real browser. Opens Chrome via MCP, exercises each acceptance criterion, verifies via DOM snapshots, and reports pass/fail. The "closer" for every implementation — proof it works, not just that tests pass.
 ---
 
 # QA Test
@@ -13,7 +13,7 @@ Verify implemented features in a real browser. Exercise each acceptance criterio
 
 ## Modes
 
-- **Agent mode** — invoked by `/dev-skills:execute-plan` or any unattended run. No questions to the user. Login and other setup go through the harness bypass the plan names (seeded session, test token, dev auth route). If there is none and the criterion can't be reached, return `BLOCKED: <what's needed>` for that criterion to the caller instead of waiting.
+- **Agent mode** — invoked by `/tap:execute-plan` or any unattended run. No questions to the user. Login and other setup go through the harness bypass the plan names (seeded session, test token, dev auth route). If there is none and the criterion can't be reached, return `BLOCKED: <what's needed>` for that criterion to the caller instead of waiting.
 - **Human mode** — invoked directly by a user who's at the keyboard. Interactive setup and "fix or expected?" questions are fine.
 
 ## Process
@@ -36,8 +36,8 @@ Gather QA pre-flight context for testing. Return a structured JSON block with:
 1. **acceptance_criteria**: List of testable criteria. Check these sources in order,
    stop at the first that has criteria:
    - **The shape doc referenced by the implementation plan** (canonical source):
-     look for `## Acceptance Criteria` section in `thoughts/plans/*.md` — it should
-     link to a `thoughts/shapes/*.md` shape doc. Read that shape doc's
+     look for `## Acceptance Criteria` section in `tap/plans/*.md` — it should
+     link to a `tap/shapes/*.md` shape doc. Read that shape doc's
      `### Acceptance Criteria` section and use those criteria verbatim.
    - The user's prompt (if criteria were given explicitly)
    - Current plan file (if it lists criteria directly — unshaped work path)
@@ -50,7 +50,7 @@ Gather QA pre-flight context for testing. Return a structured JSON block with:
    tier was used (shape doc / prompt / plan / PR / diff / issue).
 
 2. **test_url**: Where to test. Check in order:
-   - `.tap/tap-audit.md` Environments section
+   - `tap/audit.md` Environments section
    - `package.json` scripts for `dev`, `start`, or similar
    - Common defaults: localhost:3000, :5173, :4321, :6886
 
@@ -87,8 +87,8 @@ Return results as a structured summary, not raw tool output.
 <summary>Manual fallback: Gather criteria and resolve URL</summary>
 
 **Gather acceptance criteria** from (in priority order):
-- Shape doc referenced by the implementation plan (`thoughts/shapes/*.md` via
-  `thoughts/plans/*.md`) — canonical source when it exists
+- Shape doc referenced by the implementation plan (`tap/shapes/*.md` via
+  `tap/plans/*.md`) — canonical source when it exists
 - Explicit criteria provided in the prompt
 - Current plan file if it lists criteria directly (unshaped path)
 - Current ticket/issue (if referenced)
@@ -99,7 +99,7 @@ If no criteria found, ask in human mode. In agent mode, infer from the diff.
 
 **Resolve test URL** (in priority order):
 1. URL provided in the prompt
-2. `.tap/tap-audit.md` → Environments section
+2. `tap/audit.md` → Environments section
 3. `package.json` scripts → `dev`, `start`, or similar
 4. Common defaults: `http://localhost:3000`, `http://localhost:5173`, `http://localhost:4321`
 
@@ -250,7 +250,7 @@ The sub-agent returns a compact summary. Present it to the user.
 
 - **Same criterion failing the same way both cycles** → the plan is likely wrong,
   not the code. Return BLOCKED with the failing criterion and the observed behavior
-  (the fix is a plan revision via `/dev-skills:write-plan`); do not attempt a third code fix.
+  (the fix is a plan revision via `/tap:write-plan`); do not attempt a third code fix.
 - **Different criteria failing each cycle / shifting failures** → return BLOCKED to
   the caller (or the user) with a consolidated diff: for each failing criterion,
   `expected: …` vs `observed: …` plus the specific bug finding from the evaluator. Stop.

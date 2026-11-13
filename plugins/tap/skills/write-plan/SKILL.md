@@ -1,7 +1,7 @@
 ---
 name: write-plan
 description: >-
-  Write a technical implementation plan to thoughts/plans/ before coding starts (separate from the
+  Write a technical implementation plan to tap/plans/ before coding starts (separate from the
   harness's plan mode). Use when someone says "create a plan", "plan this", "plan this ticket",
   "how should we implement this", "technical design", "architect this", "plan the migration",
   "refactor plan", or when a shape or groomed ticket needs phases, layers, and agent-runnable checks.
@@ -10,17 +10,17 @@ effort: high
 
 # Write Plan
 
-Turn a shape, ticket, or technical challenge into a plan that any developer or agent can execute with `/dev-skills:execute-plan` — and that a human can read, understand, and defend.
+Turn a shape, ticket, or technical challenge into a plan that any developer or agent can execute with `/tap:execute-plan` — and that a human can read, understand, and defend.
 
 ## Workflow
 
 Every plan follows the same arc: **research → validate → write → present**.
 
 1. **Research** the codebase until grounded — never plan from assumptions (see Process).
-2. **Write** the plan to `thoughts/plans/YYYY-MM-DD-descriptive-name.md`, using today's date from context.
+2. **Write** the plan to `tap/plans/YYYY-MM-DD-descriptive-name.md`, using today's date from context.
 3. **Present** it for approval, closing with the ★ Plan View block.
 
-This skill is independent of any harness plan mode — always write the `thoughts/plans/` file. The gate is the user's approval of that file. Approval hands `execute-plan` a contract: it runs every phase to DONE or stops BLOCKED, without check-ins — so the plan must contain everything needed to get there unattended.
+This skill is independent of any harness plan mode — always write the `tap/plans/` file. The gate is the user's approval of that file. Approval hands `execute-plan` a contract: it runs every phase to DONE or stops BLOCKED, without check-ins — so the plan must contain everything needed to get there unattended.
 
 ## Design Philosophy
 
@@ -36,7 +36,7 @@ Every plan must specify how the change ships and to whom. Read [references/rollo
 
 Flags serve two purposes — **launch control** (who/when) and **reversibility** (turn-off). Either test saying "flag" justifies one. Same flag covers both if both apply.
 
-Default is **no flag, no expand-contract**. Pick the lightest mechanism(s) that produce the launch control AND reversibility actually needed. One flag per feature (at the user-visible boundary), never one flag per phase. Bug fixes never get flags. The flag system itself is discovered from `.tap/architecture.md` or by grepping known imports — do not invent one.
+Default is **no flag, no expand-contract**. Pick the lightest mechanism(s) that produce the launch control AND reversibility actually needed. One flag per feature (at the user-visible boundary), never one flag per phase. Bug fixes never get flags. The flag system itself is discovered from `tap/architecture.md` or by grepping known imports — do not invent one.
 
 ## Layers & Dev Harness
 
@@ -50,7 +50,7 @@ Every plan states how the work decomposes and how an implementer proves each par
 
 ## Whiteboard Defense (customer-facing work)
 
-If the shape's `Stakes:` is customer-facing — or there's no `Stakes:` line (bug-fix shapes) or no shape at all, and the change reaches customers — the plan carries a `## Whiteboard Defense` section: what the developer needs to explain the system at a whiteboard and defend it to their team — without line-level knowledge. Keep it ≤ 20 lines, in plain words (the `/dev-skills:explain` register: simple, direct, no jargon without a gloss):
+If the shape's `Stakes:` is customer-facing — or there's no `Stakes:` line (bug-fix shapes) or no shape at all, and the change reaches customers — the plan carries a `## Whiteboard Defense` section: what the developer needs to explain the system at a whiteboard and defend it to their team — without line-level knowledge. Keep it ≤ 20 lines, in plain words (the `/tap:explain` register: simple, direct, no jargon without a gloss):
 
 - **Sketch** — ASCII of the layer map: data flowing I/O → Function → State.
 - **Why X, not Y** — the 2–3 decisions that matter, each with the discarded option.
@@ -83,7 +83,7 @@ Never plan from assumptions. Cover all four goals; a one-file change gets a quic
 - **ANALYZE** — trace the relevant path end-to-end (entry point → data/API), mapping key functions and their inputs/outputs.
 - **VALIDATE** — confirm the premises the plan rests on. When it depends on runtime or data facts ("X drives Y", "this field is always set"), check the live data/behavior — don't infer from static code.
 
-Before narrowing in, look broadly for context the request didn't name: related docs in `thoughts/shapes/`, `thoughts/plans/`, `thoughts/research/`, `.tap/architecture.md`, `.tap/product.md`, open issues and PRs on the topic.
+Before narrowing in, look broadly for context the request didn't name: related docs in `tap/shapes/`, `tap/plans/`, `tap/research/`, `tap/architecture.md`, `tap/product.md`, open issues and PRs on the topic.
 
 If sub-agents are available, fan the four goals out in parallel. The requirement is the outcomes, not the mechanism.
 
@@ -110,7 +110,7 @@ Follow the output format below.
 [1-2 sentences: what we're building and why]
 
 ## Acceptance Criteria
-[Link to the shape doc: `thoughts/shapes/YYYY-MM-DD-name.md`]
+[Link to the shape doc: `tap/shapes/YYYY-MM-DD-name.md`]
 [The shape doc is canonical. Do NOT restate or reinterpret criteria here — qa-test consumes them from the shape doc verbatim.]
 [No shape (tiny/unshaped work)? List criteria here using shaping-work's rules: independently testable, observable behavior, no vague language.]
 
@@ -129,7 +129,7 @@ Follow the output format below.
 
 **If expand-contract:** surface [schema / API / interface]; phases expand → migrate → contract, each its own plan phase; why (no) flag on top.
 
-**If flag:** name (one per feature) · purpose (launch control / reversibility / both) · flag system (from `.tap/architecture.md` or grep; "none detected" → flag infra is a prerequisite, don't invent one) · gate location (user-perceived entrypoint) · lifecycle (short-lived + removal task / long-lived) · rollback lever: flag flip.
+**If flag:** name (one per feature) · purpose (launch control / reversibility / both) · flag system (from `tap/architecture.md` or grep; "none detected" → flag infra is a prerequisite, don't invent one) · gate location (user-perceived entrypoint) · lifecycle (short-lived + removal task / long-lived) · rollback lever: flag flip.
 
 **If neither:** direct deploy. Blast radius: [scope]. Rollback: revert + redeploy.
 
@@ -142,7 +142,7 @@ Follow the output format below.
 | [e.g. invoices table] | State | [`pnpm db:migrate && pnpm vitest invoices.repo.test.ts`] | 1 |
 | [e.g. syncInvoices use-case] | Function | [...] | 2 |
 | [e.g. GET /api/invoices] | inbound I/O | [`curl -s localhost:3000/api/invoices -H "$DEV_AUTH" \| jq length`] | 3 |
-| [e.g. Billing page] | UI | [`/dev-skills:qa-test` on /billing with seeded account] | 4 |
+| [e.g. Billing page] | UI | [`/tap:qa-test` on /billing with seeded account] | 4 |
 
 **Fastest loop:** [one command, or "trivial: direct route + seeded data"]
 **Fixtures:** [which real-world inputs, where | "N/A"]
@@ -185,11 +185,11 @@ Follow the output format below.
 
 ## Final Verification
 - [ ] `[full test suite]`, `[typecheck]`, `[lint]` → clean
-- [ ] Acceptance criteria: [how each is verified — `/dev-skills:qa-test` for UI behavior, command/query for the rest]
+- [ ] Acceptance criteria: [how each is verified — `/tap:qa-test` for UI behavior, command/query for the rest]
 
 ## Related Docs
-- `thoughts/shapes/YYYY-MM-DD-name.md` — [shape]
-- `thoughts/research/YYYY-MM-DD-name.md` — [what it covers]
+- `tap/shapes/YYYY-MM-DD-name.md` — [shape]
+- `tap/research/YYYY-MM-DD-name.md` — [what it covers]
 
 ## Open Questions
 
@@ -227,7 +227,7 @@ Plan: [title]
 └─ Phase 3: [name]            [layer: UI]
      └─ ✓ [check]
 
-Full plan → thoughts/plans/YYYY-MM-DD-name.md
+Full plan → tap/plans/YYYY-MM-DD-name.md
 ───── ★
 ```
 
@@ -261,7 +261,7 @@ Rules:
 
 ## Example (abbreviated)
 
-**Input:** shape `thoughts/shapes/2026-03-02-billing-invoices.md` — show a customer's Stripe invoices on the Billing page.
+**Input:** shape `tap/shapes/2026-03-02-billing-invoices.md` — show a customer's Stripe invoices on the Billing page.
 
 ```markdown
 # Billing invoices - Implementation Plan
@@ -273,7 +273,7 @@ Rules:
 | `invoices` table | State | `pnpm db:migrate && pnpm vitest invoices.repo.test.ts` | 1 |
 | `syncInvoices` | Function | `pnpm vitest sync-invoices.test.ts` | 2 |
 | `GET /api/invoices` | inbound I/O | `curl -s localhost:3000/api/invoices -H "$DEV_AUTH" \| jq length` → 3 | 3 |
-| Billing page | UI | `/dev-skills:qa-test` on `/billing` (seed: `pnpm seed:billing`) | 4 |
+| Billing page | UI | `/tap:qa-test` on `/billing` (seed: `pnpm seed:billing`) | 4 |
 
 **Pre-flight blockers:** Stripe test key in `.env.local` (`STRIPE_SECRET_KEY=sk_test_…`) — needed once to record fixtures.
 
@@ -296,7 +296,6 @@ Stripe ──► StripeInvoices ──► syncInvoices ──► invoices table 
 
 ## Handoffs
 
-- After approval → `/dev-skills:execute-plan` runs it to DONE or BLOCKED.
-- Customer-facing, and the developer wants to be able to explain it → `/dev-skills:explain thoughts/plans/<file>.md`.
-- The plan in `thoughts/plans/` is the source of truth during execution.
-- Offer to publish for team review: `/tap-skills:render-doc` then `/tap-skills:dossier-publish` (md stays source of truth; republish after edits).
+- After approval → `/tap:execute-plan` runs it to DONE or BLOCKED.
+- Customer-facing, and the developer wants to be able to explain it → `/tap:explain tap/plans/<file>.md`.
+- The plan in `tap/plans/` is the source of truth during execution.

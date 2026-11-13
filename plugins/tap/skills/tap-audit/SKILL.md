@@ -1,11 +1,11 @@
 ---
 name: tap-audit
-description: Assess how ready a repository is for autonomous agent work. Use when someone says "audit this repo", "tap audit", "how ready is this codebase", "assess this project", or when an agent enters an unfamiliar codebase and needs to understand it before working. Scans documentation, MCP servers, CLI tools, permissions, test infrastructure, environments, and process to produce a readiness assessment with actionable leverage points. Outputs to .tap/tap-audit.md.
+description: Assess how ready a repository is for autonomous agent work. Use when someone says "audit this repo", "tap audit", "how ready is this codebase", "assess this project", or when an agent enters an unfamiliar codebase and needs to understand it before working. Scans documentation, MCP servers, CLI tools, permissions, test infrastructure, environments, and process to produce a readiness assessment with actionable leverage points. Outputs to tap/audit.md.
 ---
 
 # TAP Audit
 
-Assess how autonomous an agent can be in this repo right now. Produce a structured assessment at `.tap/tap-audit.md`.
+Assess how autonomous an agent can be in this repo right now. Produce a structured assessment at `tap/audit.md`.
 
 This skill does NOT describe coding conventions — that's CLAUDE.md's job. This skill assesses the system: what's configured, what's missing, what's slowing delivery or letting bugs through.
 
@@ -16,13 +16,13 @@ This skill does NOT describe coding conventions — that's CLAUDE.md's job. This
 2. Assess each dimension
 3. Score readiness
 4. Identify leverage points
-5. Write `.tap/tap-audit.md`
-6. Seed `.tap/architecture.md`
+5. Write `tap/audit.md`
+6. Seed `tap/architecture.md`
 7. Present findings (human) or proceed to task (agent)
 
 ### 0. Check Existing Audit
 
-If `.tap/tap-audit.md` exists, read it before doing anything else.
+If `tap/audit.md` exists, read it before doing anything else.
 
 1. Parse `Last run:` date from the file.
 2. Run `git log --oneline --since="[date]"` to count commits since last audit.
@@ -34,7 +34,7 @@ If `.tap/tap-audit.md` exists, read it before doing anything else.
 |-----------|--------|
 | `--force` flag | Full re-run (skip to step 1) |
 | <30 days old, no key config changes | **Summary mode**: print score + top leverage points + audit age. Say "Audit is current ([N] days). Use `--force` to re-scan." **STOP.** |
-| <30 days old, key config changed | **Delta mode**: re-assess only affected dimensions. Update `.tap/tap-audit.md` in-place with new `Last run:` date. Skip unchanged sections. |
+| <30 days old, key config changed | **Delta mode**: re-assess only affected dimensions. Update `tap/audit.md` in-place with new `Last run:` date. Skip unchanged sections. |
 | >=30 days old, significant repo activity (many commits, new contributors) | Recommend full re-run. Ask before proceeding. |
 | >=30 days old, low activity (few commits, same contributors) | **Summary mode**: the audit is likely still accurate. Print score + leverage points. Say "Audit is [N] days old but repo activity is low. Use `--force` to re-scan." **STOP.** |
 | Date missing or unparseable | Full re-run (skip to step 1) |
@@ -54,7 +54,7 @@ AGENTS.md                     → agent-specific boundaries
 package.json / Cargo.toml / go.mod / requirements.txt → stack + scripts
 tsconfig.json / biome.json / .eslintrc → tooling config
 .github/workflows/            → CI/CD setup
-.tap/                         → existing project memory
+tap/                         → existing project memory
 vercel.json / fly.toml / Dockerfile / render.yaml → deploy config
 ```
 
@@ -95,10 +95,10 @@ Assess six areas. Mark ✓ (available) or ✗ (missing/incomplete) for each item
 - ADRs: any architectural decisions documented?
 
 **Strategic Context**
-- `.tap/product.md`: exists? ≤ 80 lines? `mtime` within 90 days?
-- If missing or stale, flag in Leverage Points with fix: run `/tap-skills:curate-product-context`
+- `tap/product.md`: exists? ≤ 80 lines? `mtime` within 90 days?
+- If missing or stale, flag in Leverage Points with fix: write or refresh `tap/product.md`
 
-This dimension assesses whether durable product-strategic context (vision, what we build, audience, current focus, bets, non-goals) is installed as an agent-readable artifact. This skill does NOT author or modify `.tap/product.md` — that's `/tap-skills:curate-product-context`'s job.
+This dimension assesses whether durable product-strategic context (vision, what we build, audience, current focus, bets, non-goals) is installed as an agent-readable artifact. This skill does NOT author or modify `tap/product.md`.
 
 **MCP Servers** (from .mcp.json)
 - List each configured server and what it enables
@@ -146,13 +146,10 @@ Specific design smells found flow into Approach Gaps as actionable items.
 
 #### Feedback Loops
 
-Assess the repo's **top 3 workflows** using the five-element loop model — Generator / Legibility / Evaluator / Handoff / Grading — that `/tap-skills:loop-check` owns. The most valuable finding is a workflow humans do by hand that an agent could own.
+Assess the repo's **top 3 workflows** using the five-element loop model — Generator / Legibility / Evaluator / Handoff / Grading — below. The most valuable finding is a workflow humans do by hand that an agent could own.
 
-`loop-check` is the single source of truth for the discovery scans and the rubric. For an audit, either:
-- **Run `/tap-skills:loop-check`** and fold its findings into this section, or
-- Apply its model directly: discover workflows (binary assets without generators, git-churn iteration loops, human-in-the-loop scripts, prose pipelines in docs), rate each **Closed / Open / No loop / Manual**, and prescribe a concrete fix — a specific skill, MCP, hook, CLI tool, or test. "Add browser tests" is too vague; name the thing to build.
-
-Do not re-derive the rubric here — keeping it in one place is what stops the two skills from drifting.
+- **Generator** — can an agent produce the output? **Legibility** — can it observe the running system, not just the source? **Evaluator** — can something other than the generator verify the output, with an error it can act on? **Handoff** — can it reset context and resume? **Grading** — are quality expectations mechanically enforced?
+- Discover workflows (binary assets without generators, git-churn iteration loops, human-in-the-loop scripts, prose pipelines in docs), rate each **Closed / Open / No loop / Manual**, and prescribe a concrete fix — a specific skill, MCP, hook, CLI tool, or test. "Add browser tests" is too vague; name the thing to build.
 
 #### Approach Gaps
 
@@ -183,13 +180,13 @@ Find 3-5 leverage points. Each answers: what's slowing delivery OR letting defec
 
 Prioritize by: cheapest fix that unblocks the most agent autonomy.
 
-### 4. Write .tap/tap-audit.md
+### 4. Write tap/audit.md
 
-Create `.tap/` directory if it doesn't exist. Write the assessment using the template in references/tap-audit-template.md.
+Create `tap/` directory if it doesn't exist. Write the assessment using the template in references/tap-audit-template.md.
 
-### 5. Seed .tap/architecture.md
+### 5. Seed tap/architecture.md
 
-**Always do this step.** If `.tap/architecture.md` doesn't already exist, create it now.
+**Always do this step.** If `tap/architecture.md` doesn't already exist, create it now.
 
 Scan the codebase for deliberate architectural decisions — they're visible as:
 - Consistent patterns across the codebase (same error handling everywhere)
@@ -200,9 +197,9 @@ Scan the codebase for deliberate architectural decisions — they're visible as:
 
 Write each decision in compressed format: 2-4 lines max. Capture the **principle** behind the decision so agents can apply it to novel situations. See [references/architecture-format.md](references/architecture-format.md) for format and examples.
 
-**Do NOT create individual ADR files.** Everything goes in one `.tap/architecture.md` — one file, ~50 lines, optimized for agent consumption.
+**Do NOT create individual ADR files.** Everything goes in one `tap/architecture.md` — one file, ~50 lines, optimized for agent consumption.
 
-If `.tap/architecture.md` already exists, review it against what you discovered and note any missing decisions in the Approach Gaps section of tap-audit.md.
+If `tap/architecture.md` already exists, review it against what you discovered and note any missing decisions in the Approach Gaps section of `tap/audit.md`.
 
 ### 6. Present Findings
 
@@ -228,21 +225,21 @@ Then:
 - Ask if they want to address any leverage points now
 
 **Agent mode (invoked with `--agent` or in automated pipeline):**
-- Write .tap/tap-audit.md and .tap/architecture.md silently
+- Write tap/audit.md and tap/architecture.md silently
 - Log readiness score
 - Proceed to assigned task
 
 ## Wire discoverability
 
-`.tap/tap-audit.md` and `.tap/architecture.md` are only read by agents that know they exist — CLAUDE.md is the only file loaded automatically. After writing, check the repo's CLAUDE.md for a `.tap/` context-index line:
+`tap/audit.md` and `tap/architecture.md` are only read by agents that know they exist — CLAUDE.md is the only file loaded automatically. After writing, check the repo's CLAUDE.md for a `tap/` context-index line:
 
-- **Index line exists** → make sure it mentions `tap-audit.md` (readiness scorecard) and `architecture.md` (system decisions); append if missing.
-- **No index line** → add one (show the diff, write on confirm): `Durable project context lives in .tap/ — tap-audit.md (readiness scorecard), architecture.md (system decisions)[, plus any other .tap/ files present]. Read the relevant file before deciding in that area.`
+- **Index line exists** → make sure it mentions `audit.md` (readiness scorecard) and `architecture.md` (system decisions); append if missing.
+- **No index line** → add one (show the diff, write on confirm): `Durable project context lives in tap/ — audit.md (readiness scorecard), architecture.md (system decisions)[, plus any other tap/ files present]. Read the relevant file before deciding in that area.`
 - **No CLAUDE.md** → tell the user the artifacts are invisible to agents until something references them; offer a minimal CLAUDE.md containing just that pointer.
 
 ## Boundaries
 
 - Does NOT describe the tech stack (CLAUDE.md's job)
 - Does NOT set coding conventions (CLAUDE.md's job)
-- Does NOT measure team dynamics like review turnaround (/systems-health's job)
+- Does NOT measure team dynamics like review turnaround (out of scope here)
 - Does NOT modify any code or config — read-only assessment

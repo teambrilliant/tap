@@ -17,10 +17,10 @@ Shape ambiguous ideas into clear work definitions. Focus on clarity, not process
 ## Process
 
 1. **Understand the request** — Read the input (could be anything: a Slack thread, a rough idea, a customer complaint, a formal PRD, or a handoff from product-thinker). If intent is unclear, ask up to 3 targeted questions, then shape with stated assumptions.
-2. **Understand the context** — If handed off from product-thinker, use the product context and analysis already gathered (don't re-explore). Otherwise, if working in a codebase, read `.tap/product.md` if it exists (current focus, bets, non-goals — what this work has to ladder up to), then CLAUDE.md or similar to understand what the application does (the product, not technical details). Also look for related context the request didn't mention: existing docs on the topic in `thoughts/shapes/`, `thoughts/plans/`, `thoughts/research/`, and open issues or PRs.
+2. **Understand the context** — If handed off from product-thinker, use the product context and analysis already gathered (don't re-explore). Otherwise, if working in a codebase, read `tap/product.md` if it exists (current focus, bets, non-goals — what this work has to ladder up to), then CLAUDE.md or similar to understand what the application does (the product, not technical details). Also look for related context the request didn't mention: existing docs on the topic in `tap/shapes/`, `tap/plans/`, `tap/research/`, and open issues or PRs.
 3. **Shape the work** — Write the definition using the output format below. Pick the template variant that fits the type of work.
 4. **Surface unknowns with recommendations** — For every unknown, propose a recommended resolution and list discarded alternatives with reasoning. Never ask "what do you want?" — propose what you'd do and why.
-5. **Save the document** — Save to `thoughts/shapes/YYYY-MM-DD-descriptive-name.md`.
+5. **Save the document** — Save to `tap/shapes/YYYY-MM-DD-descriptive-name.md`.
 
 ## Output Format
 
@@ -62,12 +62,12 @@ Flags serve two purposes — *launch control* (who/when) and *reversibility* (tu
 
 These are requirements, not implementation details — "the raw upload is stored and reprocessable" belongs in a shape; the script that does it belongs in the plan. Scale it: LLM cores, parsers of messy input, and integrations get the full treatment; a CRUD screen might need one line ("trivial — direct route + seeded data").
 
-**Strategic fit rules** — every shaped feature/improvement names the bet it serves, in one line. Read `.tap/product.md`:
+**Strategic fit rules** — every shaped feature/improvement names the bet it serves, in one line. Read `tap/product.md`:
 
 1. **Serves a bet** → name it and say how. One line, not a pitch.
 2. **Serves no current bet** → say that explicitly, with why it's worth doing anyway (table stakes, support cost, unblocks a bet). A legitimate answer — but a stated one.
 3. **Contradicts a non-goal** → stop and surface it before shaping further. A non-goal is a decision already made; reversing it is the user's call, not a detail to shape around.
-4. **No `.tap/product.md`** → write "no durable product context in repo" and shape anyway. Don't block. Mention `/tap-skills:curate-product-context` once, in the handoff, not in the document.
+4. **No `tap/product.md`** → write "no durable product context in repo" and shape anyway. Don't block.
 
 The point is traceability: work whose connection upward can't be stated is work nobody can prioritize against anything.
 
@@ -318,7 +318,7 @@ Serves bet: "activate signed-up Partners" — incomplete onboarding is the singl
 
 ### Rollout & Rollback
 
-Flag at the modal entrypoint (`onboarding_reminder_modal_enabled`) — user-visible behavior change some Partners may dislike, and the team wants a fast off-switch if support volume spikes. No contract changing. Discover flag system from `.tap/architecture.md`. Rollback: flag flip.
+Flag at the modal entrypoint (`onboarding_reminder_modal_enabled`) — user-visible behavior change some Partners may dislike, and the team wants a fast off-switch if support volume spikes. No contract changing. Discover flag system from `tap/architecture.md`. Rollback: flag flip.
 
 ### Dev Harness
 
@@ -359,6 +359,4 @@ Keep it focused on *what* needs to exist and *why*, not *how* to build it.
 
 ## Handoffs
 
-- Shaped work feeds into `/dev-skills:write-plan` for technical design.
-- If the repo had no `.tap/product.md`, mention `/tap-skills:curate-product-context` once — every shape after it can state strategic fit against something real.
-- Offer to publish the shape doc for team review: `/tap-skills:render-doc` then `/tap-skills:dossier-publish` (md stays source of truth; republish after edits).
+- Shaped work feeds into `/tap:write-plan` for technical design.

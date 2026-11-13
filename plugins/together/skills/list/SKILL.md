@@ -1,17 +1,17 @@
 ---
 name: list
-description: This skill should be used when the user asks to "make a checklist", "track this with me", "start a list for X", "add to the list", "what's on the list", "what's next", "what am I waiting on", "mark X done", "work the list", "let's knock out the list", or has a project or initiative (business, launch, outreach, admin, personal) with steps split between the user, Claude and other people. Not for engineering implementation plans with agent-runnable checks (that is dev-skills:write-plan).
+description: This skill should be used when the user asks to "make a checklist", "track this with me", "start a list for X", "add to the list", "what's on the list", "what's next", "what am I waiting on", "mark X done", "work the list", "let's knock out the list", or has a project or initiative (business, launch, outreach, admin, personal) with steps split between the user, Claude and other people. Not for engineering implementation plans with agent-runnable checks (that is tap:write-plan).
 ---
 
 # Together lists
 
-Shared checklists for work done by the user, Claude and other people — Things-style projects that live in the repo as `thoughts/lists/<slug>.md` and show in the `together` pane (`/together`). Unlike a write-plan plan, nothing here runs unattended: items are picked, worked together, and ticked.
+Shared checklists for work done by the user, Claude and other people — Things-style projects that live in the repo as `tap/lists/<slug>.md` and show in the `together` pane (`/together`). Unlike a write-plan plan, nothing here runs unattended: items are picked, worked together, and ticked.
 
 Write lists exactly in the format below — the pane parses it, and anything else is silently left out of the pane. The owner comes first, right after the checkbox.
 
 ## Format
 
-One list per file: `thoughts/lists/<slug>.md`, slug = the title in lowercase kebab-case (`Emma launch` → `emma-launch.md`). Lines outside this grammar are ignored by the pane but kept for humans.
+One list per file: `tap/lists/<slug>.md`, slug = the title in lowercase kebab-case (`Emma launch` → `emma-launch.md`). Lines outside this grammar are ignored by the pane but kept for humans.
 
 ```
 # <Title>
@@ -57,7 +57,7 @@ Pick the mode from the request; one request can chain several (capture then work
 
 New list, or items added to an existing one.
 
-1. List `thoughts/lists/` first. Matching title → append there, never a second file for the same project.
+1. List `tap/lists/` first. Matching title → append there, never a second file for the same project.
 2. Slug = title in lowercase kebab-case. Title is the project's name as the user says it.
 3. Group items under `##` headings when the dump has natural groups (website, outreach, admin); otherwise no headings.
 4. Owner per item:
@@ -72,7 +72,7 @@ New list, or items added to an existing one.
 
 ### Review
 
-1. For each list in `thoughts/lists/` (or just the one named), run the pane's parser:
+1. For each list in `tap/lists/` (or just the one named), run the pane's parser:
    `bun <this skill's base directory>/../../scripts/check-list.ts <file>` → JSON with `done`, `total`, `today`, `next`, `waiting` (with `ageDays`, `isStale`), `overdue`, `daysLeft`. If `bun` is missing, read the file and apply the format rules by hand.
 2. Present conversationally, never the raw JSON:
    - **Next for you** — `next` and the other `@me` / `@me+claude` items in `today`.

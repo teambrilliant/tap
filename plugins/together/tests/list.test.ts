@@ -40,7 +40,7 @@ describe('parseList', () => {
 
   test('indented lines are notes of the item above', async () => {
     const items = fixture('emma-launch')?.headings[1]?.items
-    expect(items?.[0]?.notes).toEqual(['→ thoughts/research/emma-site-audit.md'])
+    expect(items?.[0]?.notes).toEqual(['→ tap/research/emma-site-audit.md'])
     expect(items?.[2]?.notes).toEqual(['draft: site/copy-v3.md'])
   })
 

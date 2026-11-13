@@ -1,6 +1,6 @@
 ---
 name: qa-smoke-catalog
-description: Explore a running web app in a browser and build or update `.tap/smoke-tests.md` — a lean catalog of post-release smoke-test cases. Use whenever someone says "build smoke tests", "create a smoke test catalog", "explore the site for testing", "what should we smoke test", "update the smoke test catalog", "add smoke test cases", or wants exploratory testing of a web app to capture what matters before a release. Use it proactively when entering an app that has no `.tap/smoke-tests.md` and the user wants release coverage. Pairs with `qa-smoke-run`, which executes the catalog this skill produces. Outputs to `.tap/smoke-tests.md`.
+description: Explore a running web app in a browser and build or update `tap/smoke-tests.md` — a lean catalog of post-release smoke-test cases. Use whenever someone says "build smoke tests", "create a smoke test catalog", "explore the site for testing", "what should we smoke test", "update the smoke test catalog", "add smoke test cases", or wants exploratory testing of a web app to capture what matters before a release. Use it proactively when entering an app that has no `tap/smoke-tests.md` and the user wants release coverage. Pairs with `qa-smoke-run`, which executes the catalog this skill produces. Outputs to `tap/smoke-tests.md`.
 ---
 
 # QA Smoke Catalog
@@ -9,7 +9,7 @@ Build the catalog of smoke tests a human relies on after every release. The cata
 
 ## What this produces
 
-`.tap/smoke-tests.md` — a single markdown file. See [references/example-catalog.md](references/example-catalog.md) for a complete, real example. Study that file before you start — it is the canonical format, and the cases in it show the level of specificity to aim for.
+`tap/smoke-tests.md` — a single markdown file. See [references/example-catalog.md](references/example-catalog.md) for a complete, real example. Study that file before you start — it is the canonical format, and the cases in it show the level of specificity to aim for.
 
 The file has three structural parts:
 - `## Setup` — project-specific context the runner needs (base URL, identity, auth assumption, modal handling, console rule).
@@ -27,7 +27,7 @@ The file has three structural parts:
 
 ### 1. Detect mode
 
-Check whether `.tap/smoke-tests.md` exists in the target repo.
+Check whether `tap/smoke-tests.md` exists in the target repo.
 
 - **Does not exist → CREATE mode.** You'll seed `## Setup` + `## Conventions` and propose an initial catalog from scratch.
 - **Exists → UPDATE mode.** Read it first. You'll propose new or changed cases as a diff against what's already there. Never silently rewrite or drop existing cases — the human owns them. Surface every proposed change and let them decide.
@@ -81,7 +81,7 @@ The conversation *is* the authoring tool. If this skill ever feels like a genera
 
 ### 6. Write the catalog
 
-Once curated, write `.tap/smoke-tests.md`.
+Once curated, write `tap/smoke-tests.md`.
 
 **In CREATE mode**, seed the two header sections first.
 
@@ -116,16 +116,16 @@ The catalog you produce is executed by `qa-smoke-run`. That skill depends on the
 
 ## Wire discoverability
 
-`.tap/smoke-tests.md` is only read by agents that know it exists — CLAUDE.md is the only file loaded automatically. After writing, check the repo's CLAUDE.md for a `.tap/` context-index line:
+`tap/smoke-tests.md` is only read by agents that know it exists — CLAUDE.md is the only file loaded automatically. After writing, check the repo's CLAUDE.md for a `tap/` context-index line:
 
 - **Index line exists** → make sure it mentions `smoke-tests.md` (release smoke-test catalog); append if missing.
-- **No index line** → add one (show the diff, write on confirm): `Durable project context lives in .tap/ — smoke-tests.md (release smoke-test catalog)[, plus any other .tap/ files present]. Read the relevant file before deciding in that area.`
+- **No index line** → add one (show the diff, write on confirm): `Durable project context lives in tap/ — smoke-tests.md (release smoke-test catalog)[, plus any other tap/ files present]. Read the relevant file before deciding in that area.`
 - **No CLAUDE.md** → tell the user the catalog is invisible to agents until something references it; offer a minimal CLAUDE.md containing just that pointer.
 
 ## Boundaries
 
 - Does NOT execute the catalog — that's `qa-smoke-run`.
-- Does NOT write per-feature acceptance tests, unit tests, or integration tests — that's a different test layer (e.g. dev-skills' acceptance-test skills).
-- Does NOT do per-implementation browser QA of a single change — that's dev-skills' `qa-test`. This skill builds the durable, release-cadence catalog.
+- Does NOT write per-feature acceptance tests, unit tests, or integration tests — that's a different test layer.
+- Does NOT do per-implementation browser QA of a single change — that's `tap:qa-test`. This skill builds the durable, release-cadence catalog.
 - Does NOT touch application code.
 - Proposes; the human decides. The curation step is required, not optional.
