@@ -1,0 +1,160 @@
+---
+name: systems-health
+description: Measure the health of a software development system using stocks, flows, and feedback loops. Use when someone says "systems health", "how's the project going", "health check", "measure our process", "are we shipping fast enough", "what's slowing us down", or for periodic check-ins on development velocity and quality. Pulls data from git, GitHub, and CI to diagnose what's working and what's broken. Outputs to .tap/system-health.md.
+---
+
+# Systems Health
+
+Diagnose the development system. Measure stocks, flows, and feedback loops. Find what's sick and prescribe the cheapest fix.
+
+## Process
+
+1. Collect data
+2. Measure stocks
+3. Measure flows
+4. Assess feedback loops
+5. Measure complexity signals
+6. Diagnose and prescribe
+7. Write .tap/system-health.md
+
+### 1. Collect Data
+
+Pull from available sources (skip any that aren't accessible):
+
+```
+git log --oneline --since="30 days ago"          → commit frequency
+git log --oneline --since="90 days ago"           → longer trend
+git shortlog -sn --no-merges --since="30 days ago" → contributor activity
+gh pr list --state all --limit 50                 → PR lifecycle
+gh pr list --state open                           → current open PRs
+gh run list --limit 20                            → CI pass/fail rate
+gh issue list --state all --label bug --limit 50  → bug lifecycle
+gh issue list --state open                        → current open issues
+```
+
+Also read if available:
+- `.tap/tap-audit.md` → prior assessment context
+- `.tap/system-health.md` → prior health snapshot for trend comparison
+- Test runner output → test count, coverage
+
+**Time windows**: Default to 30-day snapshot with 90-day trend. Use `--since` flag on all git/gh commands.
+
+### 2. Measure Stocks
+
+Stocks are things that accumulate. Measure current level + trend.
+
+| Stock | How to measure | Healthy signal |
+|-------|---------------|----------------|
+| Backlog | `gh issue list --state open` count | Stable or shrinking |
+| Open PRs | `gh pr list --state open` count + age | < 5 open, oldest < 3 days |
+| Open bugs | `gh issue list --label bug --state open` count | Stable or shrinking |
+| Test count | Test runner `--list` or dry-run | Growing with codebase |
+| Deploy count | `gh run list` with deploy workflow, or git tags | Weekly+ |
+
+**Trend indicators**: Compare current 30-day window to previous 30-day window.
+- ▲ growing (stock increasing)
+- ▼ shrinking (stock decreasing)
+- ─ stable (within 10% variance)
+
+### 3. Measure Flows
+
+Flows change stocks. Measure rate + balance.
+
+| Flow | How to measure | What it tells you |
+|------|---------------|-------------------|
+| Stories in | Issues created per week | Demand on the system |
+| Stories out | PRs merged per week | Throughput |
+| Cycle time | PR open → merge duration (median) | How fast work moves |
+| Review time | PR open → first review (median) | Bottleneck indicator |
+| Bug inflow | Bug issues created per week | Quality signal |
+| Bug outflow | Bug issues closed per week | Fix rate |
+| Deploy frequency | Deploys per week/month | Delivery cadence |
+
+**Balance check for each stock:**
+- Inflow > outflow → stock accumulates → system backing up
+- Inflow < outflow → stock drains → system clearing
+- Inflow ≈ outflow → stable
+
+### 4. Assess Feedback Loops
+
+Identify which loops are working and which are broken.
+
+**Balancing loops (self-correcting):**
+
+| Loop | Working | Broken |
+|------|---------|--------|
+| CI gate | CI fails → dev fixes → CI passes | CI fails → ignored, merged anyway |
+| Code review | Review catches issues → dev fixes → quality maintained | Reviews rubber-stamped or stuck for days |
+| Bug triage | Bug found → prioritized → fixed | Bugs accumulate, never triaged |
+| Test failures | Test fails → investigate → fix code or test | Tests disabled, skipped, or ignored |
+
+**Reinforcing loops (amplifying):**
+
+| Loop | Working | Broken |
+|------|---------|--------|
+| Test coverage | Good tests → catch bugs → write more tests | No tests → bugs escape → "tests don't help" |
+| Documentation | Good docs → agents work well → docs updated | Thin docs → agent rework → "docs don't help" |
+| Small batches | Small PRs → fast review → more small PRs | Big PRs → slow review → bigger PRs |
+
+**Evidence-based assessment**: Don't guess. Check CI pass rate (from `gh run list`), review turnaround (from PR data), bug trends (from issue data).
+
+### 5. Measure Complexity Signals
+
+Track whether the codebase is getting harder to work with over time. Based on Ousterhout's three symptoms of complexity — all derived from git data.
+
+| Signal | What to measure | How | Concern threshold |
+|--------|----------------|-----|-------------------|
+| Change amplification | Median files per commit (30d vs 90d) | `git log --shortstat` | Trending up |
+| Shotgun surgery | % of commits touching 5+ files across 3+ directories | `git log --shortstat` + `git show --name-only` | > 20% of commits |
+| Cognitive load | Top 5 most-changed files in 30d — flag any that are also among the largest | `git log --name-only` + file sizes | Large files with high churn |
+| Unknown unknowns | % of merged PRs where no test file was changed | `gh pr list --state merged` + diff per PR | Trending up |
+
+Present as a compact table with one interpretation line summarizing the overall complexity trend (accumulating / stable / improving).
+
+If complexity is accumulating, feed into Diagnosis with specific interventions: split a god file, add tests to a hot path, extract a module.
+
+### 6. Diagnose and Prescribe
+
+For each problem found, follow the pattern:
+
+```
+Diagnosis: [what's sick]
+Evidence:  [data that proves it]
+Impact:    [how it slows delivery or hurts quality]
+Rx:        [cheapest intervention]
+```
+
+Prioritize by: most impact for least effort.
+
+**Common diagnoses:**
+- Stocks accumulating → find the bottleneck flow
+- Slow cycle time → usually review time or CI time
+- Broken feedback loop → identify who/what stopped responding to the signal
+- No feedback loop → suggest creating one (tests, CI gate, review process)
+
+### 7. Write Output
+
+Write to `.tap/system-health.md` using the template in [references/system-health-template.md](references/system-health-template.md).
+
+If prior `.tap/system-health.md` exists, compare trends. Call out what improved and what worsened since last measurement.
+
+**Human mode**: Walk through findings. Start with the headline ("your system is healthy / has 2 problems / is backing up"). Show the data. Explain the diagnosis. Propose the cheapest fix. Ask: "Want to dig into any of these?"
+
+**Agent mode**: Write `.tap/system-health.md` silently. If run as part of a `/retrospective`, feed findings into the retro.
+
+## Wire discoverability
+
+`.tap/system-health.md` is only read by agents that know it exists — CLAUDE.md is the only file loaded automatically. After writing, check the repo's CLAUDE.md for a `.tap/` context-index line:
+
+- **Index line exists** → make sure it mentions `system-health.md` (delivery health check-in); append if missing.
+- **No index line** → add one (show the diff, write on confirm): `Durable project context lives in .tap/ — system-health.md (delivery health check-in)[, plus any other .tap/ files present]. Read the relevant file before deciding in that area.`
+- **No CLAUDE.md** → tell the user the artifact is invisible to agents until something references it; offer a minimal CLAUDE.md containing just that pointer.
+
+## Boundaries
+
+- Read-only — does NOT modify code, config, or process
+- Does NOT assess code quality (that's CLAUDE.md / code review)
+- Does NOT assess agent readiness (that's /tap-audit)
+- Does NOT capture learnings (that's /retrospective)
+- ONLY measures the system and diagnoses problems
+- Data-driven — every claim backed by evidence from git/GitHub/CI
