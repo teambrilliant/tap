@@ -17,7 +17,7 @@ A plan in `tap/plans/` (from `/tap:write-plan`). No plan and the work is medium/
 
 ## The Contract
 
-Approval of the plan is the only gate. From then on you own delivering it, and a run ends in exactly one of two states:
+Approval of the plan is the only gate, and a plan marked `**Gate:** auto` in a repo with an autonomy policy already has it. From then on you own delivering it, and a run ends in exactly one of two states:
 
 **DONE** — every phase implemented; every phase check green; full test suite, typecheck and lint with no new failures against the baseline you recorded at the start; every acceptance criterion verified with cited evidence. For UI criteria, that means you ran `/tap:qa-test` yourself and it passed.
 
@@ -26,6 +26,7 @@ Approval of the plan is the only gate. From then on you own delivering it, and a
 - a harness that can't be made runnable by you — a check needs a human step with no bypass
 - a plan premise that turns out false, with no resolution that stays within the plan's intent
 - a risky or irreversible action that needs explicit confirmation: anything against shared, staging or prod environments, or outward-facing (pushing, opening PRs, deploying, messaging). Local/dev DB migrations, resets and seeds the plan's checks call for are in-contract.
+  - In a repo with an autonomy policy (`tap/autonomy.md` on its main branch), the policy is standing authorization to push the work branch, open the PR, and merge on a `merge` verdict. Those three stop being BLOCKED reasons there. Everything else in this bullet stands.
 - the same check still failing after 3 genuinely different fix attempts
 
 Before stopping BLOCKED, finish every item that doesn't depend on the blocker.
@@ -63,6 +64,12 @@ Status notes are welcome — put them in the same message as your next tool call
 
 Read the plan completely, the shape doc it links (acceptance criteria live there), and the files each phase touches. Build a todo list: one item per phase, plus final verification and each acceptance criterion.
 
+**The plan gate.** Read the plan's `**Gate:**` line and the repo's autonomy policy (`git fetch origin`, then `git show origin/<default-branch>:tap/autonomy.md`; format and rules in [blast-radius/references/autonomy.md](../blast-radius/references/autonomy.md)).
+
+- `**Gate:** human` and the operator hasn't approved this plan in this session → stop, outcome "waiting at plan gate".
+- Approved, or `**Gate:** auto` → create the work branch and commit the plan file alone as its first commit (`plan: <title>`). That commit is the approval record: the merge verdict compares the plan at that commit with the plan at head, so after it only ticks and `## Decisions` change in the plan file.
+- No `**Gate:**` line, or no autonomy policy → the plan needs approval as before, and Ship (step 4) doesn't apply.
+
 Resuming? Existing `[x]` marks in the plan are done — start from the first unchecked item; re-verify earlier work only if something contradicts it.
 
 Verify the plan's **Pre-flight blockers** are cleared (key present, seed runs, auth bypass works) — plus browser MCP reachability if there's a UI layer or UI criterion. Record a baseline of the test suite, typecheck and lint. If a pre-flight item isn't in place, that's BLOCKED before any code — report it now, not after three phases. Pre-existing failures in the baseline are listed in the report, not fixed.
@@ -83,12 +90,28 @@ Then move straight to the next phase.
 - Every acceptance criterion from the shape doc, each with evidence: command output, query result, or qa-test finding.
 - UI criteria → run `/tap:qa-test` in agent mode. It fixes and re-tests up to its own limit; a criterion it can't get green is a BLOCKED item with its evidence.
 
-### 4. Report
+### 4. Ship
+
+Only in a repo with an autonomy policy that says `Delivery: pr`. Otherwise skip to the report.
+
+1. Push the work branch, then `gh pr create`. Body: what the change does, the plan path, the Decisions log.
+2. Wait for the required checks: `gh pr checks <n> --watch --required`. A verdict taken while they are pending is always `human`. A failed check → fix it within the plan, push, wait again. Still failing after 3 genuinely different attempts → hand over.
+3. Start a fresh agent with no context from this session and give it one instruction: "run `/tap:blast-radius <n> verdict`". Use its outcome, never your own reading of the change. A verdict marked "autonomy override" counts as `human`.
+4. `human` → hand over. Outcome: "waiting at merge gate".
+5. `merge` → `gh pr merge <n> --squash --match-head-commit <sha from the verdict>` (the repo's own merge method if it doesn't allow squash). A refusal, because the head moved or a check went red since → hand over.
+6. Run the policy's **Verify after merge** for the merge commit. Pass → tick the list item, if the work came from one, with a `→` link to the evidence. Fail → hand over with the failure. Never revert on your own.
+7. Several repos → one PR each, in the plan's merge order. Start the next only after the one before it is merged and verified.
+
+`Ceiling: none` → stop after step 3 with the verdict posted. Outcome: "waiting at merge gate".
+
+**Hand over.** If the work came from a list item, change its owner to the operator (`@me`) and add a note under it with the reason and the PR or plan link, in the list grammar from `CONTRACTS.md`. Otherwise state both in the report. A handed-over PR stays open; don't close it.
+
+### 5. Report
 
 Decisions lead — they're what the developer hasn't seen yet.
 
 ```
-Contract: DONE | BLOCKED
+Contract: DONE | BLOCKED · Outcome: merged | waiting at merge gate | waiting at plan gate | blocked · <PR or plan link>
 
 Decisions (least sure first — full list in the plan's ## Decisions)
 1. [what happens, as a scenario] — [plan said X / didn't say]. Alt: [not taken]. (unsure)
@@ -125,6 +148,6 @@ See [write-plan/references/rollout-primitives.md](../write-plan/references/rollo
 
 ## Handoffs
 
-- DONE → offer `/tap:blast-radius` for an independent review before merge: it checks the Decisions log against the diff and finds the calls it missed.
+- DONE in a repo with no autonomy policy → offer `/tap:blast-radius` for an independent review before merge: it checks the Decisions log against the diff and finds the calls it missed. With a policy, Ship already ran it.
 - DONE on customer-facing work → offer `/tap:explain` on the shipped diff, seeded with the Decisions, so the developer can explain and defend what shipped.
 - BLOCKED because the plan itself is wrong → `/tap:write-plan` with the evidence.

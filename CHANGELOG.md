@@ -2,6 +2,14 @@
 
 Versions are those of the `tap` plugin. Through 3.2.0 this was `dev-skills`; the `tap-skills` changelog through 0.19.0 is at `docs/history/tap-skills-CHANGELOG.md`.
 
+## 4.1.0
+
+- **Autonomy policy.** A repo's `tap/autonomy.md`, read from its main branch, sets a merge ceiling (`none`, `low`, `medium`, `all`) and says what never goes without a human, which contracts other repos consume, the required checks, the work list, and how to verify after a merge. No file → every skill behaves as in 4.0.0. Format and rules: `plugins/tap/skills/blast-radius/references/autonomy.md`.
+- **`write-plan` gates every plan.** `**Gate:** auto` or `**Gate:** human — <criteria>` from eight factual questions (user-visible change, data model change, data migration, irreversible change, new dependency, new infrastructure, new cost, operator decision). Plans gain `## Declares` (repos, migration, contract changes). An `auto` plan goes straight to `execute-plan`. `CONTRACTS.md` covers both.
+- **`blast-radius` ends in a verdict.** `merge` or `human`, from nine fixed rules and the risk level against the ceiling, posted as the PR's one verdict comment. New arguments: `verdict`, `dry run`, `autonomy <file>`. Whoever wrote the change hands the verdict to a fresh agent. A small additive migration is now MEDIUM; every other migration stays HIGH. It no longer calls itself "the human gate".
+- **`execute-plan` ships.** With an autonomy policy it commits the plan as the approval record, opens the PR, waits for required checks, gets the verdict from a fresh agent, merges with `--match-head-commit` on `merge`, runs the policy's verification, and hands the item to the operator on `human` or any failure. It never reverts on its own. The report's first line carries the outcome.
+- **`tap-audit` proposes a merge ceiling and drafts the first `tap/autonomy.md`** as a PR. It never merges it.
+
 ## 4.0.0
 
 - **Breaking — one repo, four plugins.** `dev-skills`, `tap-skills`, the `thoughts` pane and `together` merge into `teambrilliant/tap` as `tap` (12 core skills), `tap-labs` (10 experimental skills), `tap-pane` and `together`. Skills are invoked as `/tap:<name>` or `/tap-labs:<name>`; `/dev-skills:` and `/tap-skills:` names are gone.

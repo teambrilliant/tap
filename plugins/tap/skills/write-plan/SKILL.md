@@ -18,9 +18,31 @@ Every plan follows the same arc: **research → validate → write → present**
 
 1. **Research** the codebase until grounded — never plan from assumptions (see Process).
 2. **Write** the plan to `tap/plans/YYYY-MM-DD-descriptive-name.md`, using today's date from context.
-3. **Present** it for approval, closing with the ★ Plan View block.
+3. **Gate** it: `auto` or `human` (see Gate).
+4. **Present** it, closing with the ★ Plan View block. A `human` plan waits for approval. An `auto` plan goes straight on to `/tap:execute-plan` in the same turn.
 
-This skill is independent of any harness plan mode — always write the `tap/plans/` file. The gate is the user's approval of that file. Approval hands `execute-plan` a contract: it runs every phase to DONE or stops BLOCKED, without check-ins — so the plan must contain everything needed to get there unattended.
+This skill is independent of any harness plan mode — always write the `tap/plans/` file. For a `human` plan the gate is the user's approval of that file; for an `auto` plan the repo's autonomy policy has already given it. Either way `execute-plan` gets a contract: it runs every phase to DONE or stops BLOCKED, without check-ins — so the plan must contain everything needed to get there unattended.
+
+## Gate
+
+Every plan says whether a human has to approve it before work starts. Answer eight questions about what the plan does. Each has a factual answer; none is a judgement of how hard or risky the work feels.
+
+1. **user-visible change** — will a user of the product see or feel a difference?
+2. **data model change** — does it rewire the data model: existing columns or relations changed or removed, or more than a small addition?
+3. **data migration** — does it rewrite existing rows?
+4. **irreversible change** — is there anything a revert doesn't undo? A contract change that removes, renames or changes the meaning of something another repo consumes counts.
+5. **new dependency** — does it add a package or an external service?
+6. **new infrastructure** — does it add something that has to be provisioned or operated?
+7. **new cost** — does it add spend?
+8. **operator decision** — does it rest on a call that is the operator's to make (product direction, priorities, policy, money, anything the shape left open for them)?
+
+Any yes → `human`, naming each one. All no → `auto`.
+
+- A small additive migration is neither a data model change nor a data migration here: every migration file is new; it only adds a handful of columns or one small table that existing rows and code can ignore; it follows expand-contract; no existing column, relation or row changes. It is declared under `## Declares`, and the merge verdict rates it.
+- The repo's autonomy policy may switch criteria off with its `Plan gate:` line. Read it from the main branch: `git show origin/<default-branch>:tap/autonomy.md` (format in [blast-radius/references/autonomy.md](../blast-radius/references/autonomy.md)).
+- No autonomy policy → every plan is `human`, reason "no autonomy policy".
+- A plan that touches several repos takes the strictest result across them.
+- When a question can't be answered with confidence, the answer is yes.
 
 ## Design Philosophy
 
@@ -59,6 +81,10 @@ If the shape's `Stakes:` is customer-facing — or there's no `Stakes:` line (bu
 - **Where it fails** — failure modes, what the user sees, how we'd notice.
 
 If you can't fill a line, that's a planning gap — resolve it rather than leaving it blank. PoC and internal-only work skip this section.
+
+## Declares
+
+`## Declares` is what the merge verdict checks the finished change against, so it is exact. Name every repo the plan changes, every migration (and whether it is a small additive one), and every change to a contract another repo consumes together with that repo's paired change. A migration or contract change that shows up in the diff without being declared here stops at the merge gate.
 
 ## Principles
 
@@ -106,6 +132,9 @@ Follow the output format below.
 ```markdown
 # [Title] - Implementation Plan
 
+**Gate:** auto
+[or: **Gate:** human — <each criterion that applies>]
+
 ## Overview
 [1-2 sentences: what we're building and why]
 
@@ -113,6 +142,11 @@ Follow the output format below.
 [Link to the shape doc: `tap/shapes/YYYY-MM-DD-name.md`]
 [The shape doc is canonical. Do NOT restate or reinterpret criteria here — qa-test consumes them from the shape doc verbatim.]
 [No shape (tiny/unshaped work)? List criteria here using shaping-work's rules: independently testable, observable behavior, no vague language.]
+
+## Declares
+- **Repos:** [each repo this changes; merge order if more than one]
+- **Migration:** [none | additive: what it adds | other: what it does]
+- **Contract changes:** [none | contract — what changes — paired change: repo, what]
 
 ## Current State
 [What exists now, what's missing, relevant code locations]
@@ -209,6 +243,7 @@ The ASCII is a structural **map**, not a re-render of the plan body — show pha
 ```
 ★ Plan View ─────
 - Building: [what, one line]
+- Gate: [auto | human — criteria]
 - Approach: [the strategy, one line]
 - Blast radius: [N files / surfaces]  ·  Rollout: [flag / expand-contract / direct]
 - Iterate via: [fastest loop, one command]
@@ -296,6 +331,6 @@ Stripe ──► StripeInvoices ──► syncInvoices ──► invoices table 
 
 ## Handoffs
 
-- After approval → `/tap:execute-plan` runs it to DONE or BLOCKED.
+- After approval, or straight away for `Gate: auto` → `/tap:execute-plan` runs it to DONE or BLOCKED.
 - Customer-facing, and the developer wants to be able to explain it → `/tap:explain tap/plans/<file>.md`.
 - The plan in `tap/plans/` is the source of truth during execution.

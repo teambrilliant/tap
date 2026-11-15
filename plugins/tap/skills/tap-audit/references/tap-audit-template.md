@@ -83,6 +83,14 @@ Top 3 agent workflows assessed:
 - Grading: [measurable criteria, or "missing"]
 - **Automate**: [concrete path]
 
+### Merge ceiling (proposed): [none / low / medium]
+- Checks on PRs: [exact check names, or "none"]
+- Branch protection: [required checks, admins included or not]
+- Test coverage: [would broken logic turn a check red?]
+- Deploy on merge: [what a merge reaches]
+- Post-merge verification: [command or workflow, or "none"]
+[1 sentence: why this ceiling, and what would raise it]
+
 ## Approach Gaps
 - [gap description — what's missing and why it matters for agents]
 [for each identified gap, including design smells from complexity spot check]
