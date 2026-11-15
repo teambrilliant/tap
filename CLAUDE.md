@@ -36,6 +36,8 @@ allowed-tools: [...]           # optional
 
 Workflow stages: `shape → plan → execute → QA`. `product-thinker` and `strategic-thinker` pair with shaping and planning; `explain` works at any stage; `blast-radius`, `tap-audit`, `tighten-loop` and the `qa-smoke-*` pair are the harness around the pipeline.
 
+The gates: `write-plan` marks each plan `Gate: auto | human`, `blast-radius` ends in a merge verdict, `execute-plan` acts on both, and `tap-audit` drafts the repo's `tap/autonomy.md`. The policy format and the nine fixed rules are written once, in `plugins/tap/skills/blast-radius/references/autonomy.md`; other skills link to it.
+
 When editing skills:
 
 - Reference files are for templates and examples too large for `SKILL.md`.

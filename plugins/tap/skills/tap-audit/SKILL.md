@@ -1,6 +1,6 @@
 ---
 name: tap-audit
-description: Assess how ready a repository is for autonomous agent work. Use when someone says "audit this repo", "tap audit", "how ready is this codebase", "assess this project", or when an agent enters an unfamiliar codebase and needs to understand it before working. Scans documentation, MCP servers, CLI tools, permissions, test infrastructure, environments, and process to produce a readiness assessment with actionable leverage points. Outputs to tap/audit.md.
+description: Assess how ready a repository is for autonomous agent work. Use when someone says "audit this repo", "tap audit", "how ready is this codebase", "assess this project", "draft autonomy", "propose an autonomy policy", or when an agent enters an unfamiliar codebase and needs to understand it before working. Scans documentation, MCP servers, CLI tools, permissions, test infrastructure, environments, and process to produce a readiness assessment with actionable leverage points. Outputs to tap/audit.md, and drafts the repo's first tap/autonomy.md as a PR.
 ---
 
 # TAP Audit
@@ -18,7 +18,8 @@ This skill does NOT describe coding conventions — that's CLAUDE.md's job. This
 4. Identify leverage points
 5. Write `tap/audit.md`
 6. Seed `tap/architecture.md`
-7. Present findings (human) or proceed to task (agent)
+7. Propose `tap/autonomy.md` as a PR
+8. Present findings (human) or proceed to task (agent)
 
 ### 0. Check Existing Audit
 
@@ -165,6 +166,18 @@ Don't repeat CLAUDE.md. Flag what's MISSING that causes agent rework:
 - CI/CD pipeline (what runs, recent pass rate)
 - Deploy mechanics (auto or manual, to which environments)
 
+#### Merge ceiling (proposed)
+
+How much of this repo's work could merge without a human today. Propose one ceiling, `none`, `low`, `medium` or `all`, with its reasons, from five facts:
+
+- **Checks on PRs** — do lint, typecheck and tests run on every PR, and which exact check names report?
+- **Branch protection** — are those checks required on the main branch, for admins too?
+- **Test coverage** — would a broken change to business logic turn a check red?
+- **Deploy on merge** — does a merge reach users on its own, and how far?
+- **Post-merge verification** — is there a command or workflow that says the merge is healthy?
+
+No checks on PRs, or checks that aren't required → `none`, and the fix is a leverage point. Required checks but thin tests or no post-merge verification → `low`. Required checks, tests that catch broken logic, verified deploys → `medium`. `all` is for the operator to choose; never propose it.
+
 ### 3. Identify Leverage Points
 
 Goal: **ship faster while maintaining quality bar.**
@@ -201,7 +214,27 @@ Write each decision in compressed format: 2-4 lines max. Capture the **principle
 
 If `tap/architecture.md` already exists, review it against what you discovered and note any missing decisions in the Approach Gaps section of `tap/audit.md`.
 
-### 6. Present Findings
+### 6. Draft the autonomy policy
+
+Runs when the repo has no `tap/autonomy.md` on its main branch (`git show origin/<default-branch>:tap/autonomy.md` fails), or when asked ("draft autonomy"). Asked for on its own, it skips the rest of the audit and reuses `tap/audit.md`, scanning only what it still needs.
+
+Write `tap/autonomy.md` in the format from [blast-radius/references/autonomy.md](../blast-radius/references/autonomy.md), filled from the scan:
+
+- **Ceiling** — the proposed merge ceiling. A ceiling the operator states when asking replaces the proposed one.
+- **Delivery** — `pr` or `main`, from how recent work reached the main branch.
+- **Plan gate** — `all`.
+- **Never auto** — what should never go without a human in this repo and why: changes whose effect a revert doesn't undo and that reach users or other systems (native app code and runtime versions, published packages, billing, infrastructure definitions). Sentences, with known paths as examples. Don't repeat the built-in list from the reference; if nothing else qualifies, say so.
+- **Contracts** — interfaces this repo owns that another repo consumes (an API schema, published types, an event or payload shape): which repo, and why it can't change freely. Name the interface itself, with its file, not the code behind it. What this repo consumes from others is not its contract.
+- Every Never auto and Contracts entry closes the tap for every change that matches it, so list few and keep each narrow. The ceiling and the required checks already cover ordinary risk; an entry is for what they can't. Candidates you considered and left out go in the PR body under "Considered, not listed", with the reason, so the operator can add them.
+- **Required checks** — the exact names of the checks that run on PRs, as the code host reports them.
+- **Work list** — the list under `tap/lists/` the repo's work is taken from, if there is one.
+- **Verify after merge** — the command or workflow that shows a merge is healthy, and what success looks like. Only what the merge itself triggers, looked up by the merge commit (`gh run list --workflow <file> --commit <sha>`), never "the latest run" and never a scheduled run: a failing entry here stops every later merge in the repo.
+
+Then open it as a PR on its own branch, with the reason for each entry in the body. Never merges it: the policy takes effect when the operator merges the PR, and they can change anything first. If the repo already has a PR in progress that the operator asked to carry the draft, commit it there instead.
+
+Where a policy already exists on the main branch, propose changes the same way, as a PR. Never edit it in place and never push it to the main branch.
+
+### 7. Present Findings
 
 **Human mode (default):**
 
@@ -243,3 +276,4 @@ Then:
 - Does NOT set coding conventions (CLAUDE.md's job)
 - Does NOT measure team dynamics like review turnaround (out of scope here)
 - Does NOT modify any code or config — read-only assessment
+- Drafts the autonomy policy; it takes effect only when the operator merges the PR

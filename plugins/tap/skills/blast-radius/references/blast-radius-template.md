@@ -2,7 +2,13 @@
 
 Omit any section with nothing in it. Plain sentences, facts verbatim.
 
+The verdict line and its reasons open the report only where the repo has an autonomy policy (see [autonomy.md](autonomy.md)); leave them out otherwise. With a verdict, the whole report is the PR's one verdict comment, and later runs edit that comment instead of adding another.
+
 ```markdown
+**Verdict: [merge / human]** · Risk: [LOW / MEDIUM / HIGH] · Ceiling: [none / low / medium / all] · `[head sha, 7 chars]`
+- [each rule that fired, or the reason risk exceeds the ceiling; for `merge`: "no rule fired, risk within ceiling"]
+- [only with `autonomy <file>`: "autonomy override, not from main"]
+
 # Blast Radius: [PR title or branch name]
 **Risk: [LOW / MEDIUM / HIGH]** — [what to focus on before merging, one line]
 
