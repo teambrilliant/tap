@@ -2,6 +2,15 @@
 
 Versions are those of the `tap` plugin. Through 3.2.0 this was `dev-skills`; the `tap-skills` changelog through 0.19.0 is at `docs/history/tap-skills-CHANGELOG.md`.
 
+## 4.2.0
+
+- **New skill: `ship`.** Finished work, however it was made, goes to the main branch as far as the repo's autonomy policy allows: a fresh agent's verdict, then delivery, then verification, or a hand-over with the reason. `execute-plan` ends by running it; its own Ship step is gone.
+- **The gate no longer reads plans.** Removed: `## Declares` in plans, the plan's approval commit, and the rules for undeclared migrations, undeclared contract changes and a plan changed after approval. Nothing requires a plan, or any `tap/` file other than `tap/autonomy.md`, to be committed. Migrations and interface changes are decided by risk level against the ceiling. `CONTRACTS.md` drops the `## Declares` block.
+- **Simpler policy, five fixed rules** (was nine): never auto, the gate's own files, required checks, a failing verification on main, instructions aimed at the reader. `Plan gate:` and `## Contracts` leave the format; a 4.1.0 policy still reads, with both ignored. Multi-repo merge order is gone.
+- **`Delivery: main` works.** The verdict is given on the working copy, with the reader running the policy's required checks (commands, under this delivery); then one commit carrying the verdict line is pushed to main, or the work is committed on a pushed branch for the operator.
+- **`Delivery: pr`: the verdict comes before the PR.** The fresh agent's report, verdict line first, is the PR description. The merge waits for the required checks and is pinned to the commit the verdict read. A verdict on a PR that already exists is still its one comment.
+- **`tap-audit`** drafts policies in the new format, lists commands as required checks for push-to-main repos, and leaves the draft uncommitted where the repo has no PRs.
+
 ## 4.1.0
 
 - **Autonomy policy.** A repo's `tap/autonomy.md`, read from its main branch, sets a merge ceiling (`none`, `low`, `medium`, `all`) and says what never goes without a human, which contracts other repos consume, the required checks, the work list, and how to verify after a merge. No file → every skill behaves as in 4.0.0. Format and rules: `plugins/tap/skills/blast-radius/references/autonomy.md`.

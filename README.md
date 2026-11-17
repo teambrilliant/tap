@@ -21,11 +21,12 @@ Optional: `tap-pane` and `together` (Claude Code panes), `tap-labs` (experimenta
 | strategic-thinker | `/tap:strategic-thinker` | Approach selection, tradeoffs, sanity checks |
 | shaping-work | `/tap:shaping-work` | Rough idea → shape in `tap/shapes/` |
 | write-plan | `/tap:write-plan` | Shape or ticket → plan in `tap/plans/` (layers, agent-runnable checks). Marks each plan `Gate: auto` or `Gate: human` |
-| execute-plan | `/tap:execute-plan` | Plan → verified code; ends DONE or BLOCKED, no check-ins. With an autonomy policy it also opens the PR, merges on a `merge` verdict and verifies |
+| execute-plan | `/tap:execute-plan` | Plan → verified code; ends DONE or BLOCKED, no check-ins. With an autonomy policy it ends by running `/tap:ship` |
 | qa-test | `/tap:qa-test` | Browser-based verification of acceptance criteria |
 | explain | `/tap:explain` | ASCII + plain words: understand and defend a plan or change |
 | blast-radius | `/tap:blast-radius` | Impact analysis of a change before merging. With an autonomy policy it ends in a verdict: `merge` or `human` |
-| tap-audit | `/tap:tap-audit` | How ready a repo is for autonomous agent work; writes `tap/audit.md`, seeds `tap/architecture.md`, drafts the first `tap/autonomy.md` as a PR |
+| ship | `/tap:ship` | Finished work → main, as far as the autonomy policy allows: a fresh agent's verdict, then PR and merge, or commit and push, or a hand-over with the reason. Needs no plan |
+| tap-audit | `/tap:tap-audit` | How ready a repo is for autonomous agent work; writes `tap/audit.md`, seeds `tap/architecture.md`, drafts the first `tap/autonomy.md` |
 | tighten-loop | `/tap:tighten-loop` | Turn this session's course-corrections into durable, repo-portable fixes |
 | qa-smoke-catalog | `/tap:qa-smoke-catalog` | Explore a web app and build `tap/smoke-tests.md` |
 | qa-smoke-run | `/tap:qa-smoke-run` | Run the smoke-test catalog in a browser; report only what's broken |
@@ -42,15 +43,16 @@ shape → plan → execute → QA → blast radius
 3. `/tap:execute-plan` — build it to the contract: DONE or BLOCKED, verification included
 4. `/tap:qa-test` — verify in a browser (execute-plan runs it for UI criteria)
 5. `/tap:blast-radius` — what the change decided on its own and what it could break
+6. `/tap:ship` — in a repo with an autonomy policy: verdict, then merge, push, or hand over
 
 ## Autonomy policy
 
-A repo opens the tap with one file, `tap/autonomy.md`, on its main branch. It sets a merge ceiling (`none`, `low`, `medium`, `all`) and says what never goes without a human, which contracts other repos consume, which checks must pass, and how to verify after a merge. Two gates read it:
+A repo opens the tap with one file, `tap/autonomy.md`, on its main branch. It sets a ceiling (`none`, `low`, `medium`, `all`), says whether work is delivered by PR or by push to main, what never goes without a human, which checks must pass, and how to verify afterwards. Nothing else under `tap/` has to exist. Two gates:
 
 - **Plan gate** (`write-plan`): a plan is `Gate: human` when it changes what users see, rewires the data model, rewrites rows, can't be reverted, adds a dependency, infrastructure or cost, or rests on a call that is yours. Otherwise it is `Gate: auto` and goes straight to execution.
-- **Merge gate** (`blast-radius`): a fresh agent rates the PR's risk, applies nine fixed rules, and compares the risk with the ceiling. `merge` → `execute-plan` merges and verifies. `human` → the item comes to you with the reason.
+- **Merge gate** (`ship`, `blast-radius`): `/tap:ship` takes any finished work, with or without a plan. A fresh agent rates the change's risk, applies five fixed rules, and compares the risk with the ceiling. `merge` → `ship` merges the PR, or commits and pushes to main, and verifies. `human` → the work comes to you as an open PR or a pushed branch, with the reason.
 
-`/tap:tap-audit` drafts the file as a PR; it takes effect when you merge it. No file, no gates: the repo behaves as before. Set `Ceiling: none` to stop all automatic merging. Format and rules: [`plugins/tap/skills/blast-radius/references/autonomy.md`](plugins/tap/skills/blast-radius/references/autonomy.md).
+`/tap:tap-audit` drafts the file as a PR, or leaves it uncommitted where the repo has no PRs; it takes effect when you merge or push it. No file, no gates: the repo behaves as before. Set `Ceiling: none` to stop all automatic merging. Format and rules: [`plugins/tap/skills/blast-radius/references/autonomy.md`](plugins/tap/skills/blast-radius/references/autonomy.md).
 
 ## Labs (`tap-labs`)
 
