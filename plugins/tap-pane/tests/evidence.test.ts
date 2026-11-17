@@ -75,7 +75,7 @@ describe('stripOf', () => {
   })
 
   test('phases without checks take no cell and no gap', async () => {
-    const plan: Plan = { title: 'T', phases: [{ name: 'Phase 1: a', layer: null, items: [] }, midrun().phases[0] ?? { name: 'x', layer: null, items: [] }] }
+    const plan: Plan = { title: 'T', gate: null, phases: [{ name: 'Phase 1: a', layer: null, items: [] }, midrun().phases[0] ?? { name: 'x', layer: null, items: [] }] }
     expect(stripOf(plan, () => '●', 80)).toEqual(['●', '●'])
   })
 })
@@ -96,6 +96,7 @@ describe('failStreakOf', () => {
 describe('isProvenDone', () => {
   const plan = (final: boolean): Plan => ({
     title: 'T',
+    gate: null,
     phases: [
       { name: 'Phase 1: a', layer: null, items: [{ text: '`early` → ok', command: 'early', isChecked: true }] },
       ...(final ? [{ name: 'Final Verification', layer: null, items: [{ text: '`bun test` → ok', command: 'bun test', isChecked: true }, prose] }] : []),
@@ -118,6 +119,6 @@ describe('isProvenDone', () => {
   test('without a Final Verification gate, every check with a command must be fresh; with none, never', async () => {
     expect(isProvenDone(plan(false), glyphs({ early: '●' }))).toBe(true)
     expect(isProvenDone(plan(false), glyphs({ early: '◌' }))).toBe(false)
-    expect(isProvenDone({ title: 'T', phases: [{ name: 'Phase 1: a', layer: null, items: [prose] }] }, () => '✓')).toBe(false)
+    expect(isProvenDone({ title: 'T', gate: null, phases: [{ name: 'Phase 1: a', layer: null, items: [prose] }] }, () => '✓')).toBe(false)
   })
 })

@@ -19,7 +19,7 @@ A tap is the valve on a stock: work sits in the stock (the lists), and the tap c
 
 - **Core never references labs.** No `tap-labs:` skill name and no relative link into `plugins/tap-labs` from `plugins/tap`. Labs may reference core. `scripts/check-refs.sh` enforces both.
 - **Promotion is a folder move** from `plugins/tap-labs/skills/` to `plugins/tap/skills/`, plus a rename of its references.
-- **`CONTRACTS.md` specifies what panes read from skills.** Change it in the same commit as the skill or pane it binds: every ★ block opens `★ <Kind> ─────` and closes `───── ★`; every plan Phase Check item starts with its command in backticks; `execute-plan` ticks `- [x]` right after each check passes.
+- **`CONTRACTS.md` specifies what panes and pipelines read from skills.** Change it in the same commit as the skill or pane it binds: every ★ block opens `★ <Kind> ─────` and closes `───── ★`; every plan Phase Check item starts with its command in backticks; `execute-plan` ticks `- [x]` right after each check passes.
 - Bump a plugin's `plugin.json` version on behavioral changes. `package.json` follows `tap`.
 
 ## Skills

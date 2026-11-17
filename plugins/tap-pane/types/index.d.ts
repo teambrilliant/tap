@@ -22,6 +22,8 @@ declare module 'claude-code' {
       baselineTicks: string[]
       ledger: ThoughtsRun[]
       editSeq: number
+      /** How the last reported run ended, in the words of CONTRACTS.md; null until one reports. */
+      outcome: string | null
     }
   }
 }

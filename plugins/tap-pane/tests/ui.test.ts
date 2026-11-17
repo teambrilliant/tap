@@ -72,6 +72,16 @@ describe('bandText', () => {
     expect(bandText(big, noPins, evidence, 40)).toBe('○ Big · P1 · 0/40 · ▁  ▁  ▁  ▁')
   })
 
+  test('a human plan with nothing ticked says so after the title; once a check is ticked it does not', async () => {
+    expect(bandText(parsePlan(PLANS.gated), noPins, evidence, 100)).toBe('○ Gated fixture · human gate · P1 State · 0/2 · ▁▁')
+    expect(bandText(parsePlan(PLANS.gated.replace('- [ ]', '- [x]')), noPins, evidence, 100)).not.toContain('human gate')
+  })
+
+  test('an auto plan and a plan with no gate say nothing about it', async () => {
+    expect(bandText(parsePlan(PLANS.gated.replace('human — user-visible change, new dependency', 'auto')), noPins, evidence, 100)).not.toContain('gate')
+    expect(bandText(parsePlan(PLANS.tick), noPins, evidence, 100)).not.toContain('gate')
+  })
+
   test('too narrow even per phase: no strip, the pins notice stays whole', async () => {
     const line = bandText(parsePlan(PLANS.midrun), { kinds: ['Product View'], isPaneShown: false }, evidence, 50)
     expect(line).toBe('◑ Billing invoices · P2 Function · 3/7 · ★ 1 pinned: Product')

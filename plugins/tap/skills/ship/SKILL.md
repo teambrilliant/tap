@@ -27,7 +27,7 @@ Format and rules: [blast-radius/references/autonomy.md](../blast-radius/referenc
 
 ### 2. Get the verdict
 
-The verdict is never yours. Start a fresh agent with no context from this session and give it one instruction: "run `/tap:blast-radius verdict`" in this working copy. Use what it returns, unchanged. A verdict marked "autonomy override" counts as `human`.
+The verdict is never yours. Start a fresh agent (any agent with none of this session's context that reads the same change; see "Who may give it" in [blast-radius](../blast-radius/SKILL.md)) and give it one instruction: "run `/tap:blast-radius verdict`" in this working copy. Use what it returns, unchanged. A verdict marked "autonomy override" counts as `human`.
 
 Anything that changes after the verdict voids it: get a new one.
 

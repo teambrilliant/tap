@@ -19,7 +19,7 @@ Every plan follows the same arc: **research → validate → write → present**
 1. **Research** the codebase until grounded — never plan from assumptions (see Process).
 2. **Write** the plan to `tap/plans/YYYY-MM-DD-descriptive-name.md`, using today's date from context.
 3. **Gate** it: `auto` or `human` (see Gate).
-4. **Present** it, closing with the ★ Plan View block. A `human` plan waits for approval. An `auto` plan goes straight on to `/tap:execute-plan` in the same turn.
+4. **Present** it, closing with the ★ Plan View block. A `human` plan waits for approval, and its reply ends with the outcome line (see Plan View). An `auto` plan goes straight on to `/tap:execute-plan` in the same turn.
 
 This skill is independent of any harness plan mode — always write the `tap/plans/` file. For a `human` plan the gate is the user's approval of that file; for an `auto` plan the repo's autonomy policy has already given it. Either way `execute-plan` gets a contract: it runs every phase to DONE or stops BLOCKED, without check-ins — so the plan must contain everything needed to get there unattended.
 
@@ -258,6 +258,7 @@ Full plan → tap/plans/YYYY-MM-DD-name.md
 
 Rules:
 - Close with the `─── ★` line after the `Full plan →` line, exactly as shown — tools read it. The rule after the bullets stays plain.
+- A `human` plan: after the closing line, end the reply with one more line, `Outcome: waiting at plan gate · tap/plans/<file>.md`. It is how whatever started this run learns that it stopped for approval. An `auto` plan prints no such line; `execute-plan`'s report carries the outcome.
 - Block leads the closing response — consistent with `product-thinker` (★ Product View), `shaping-work` (★ Shaped View), `strategic-thinker` (★ Strategic View)
 - Summary bullets are assertions, not hedges
 - ASCII shows structure only — never duplicate the markdown body
