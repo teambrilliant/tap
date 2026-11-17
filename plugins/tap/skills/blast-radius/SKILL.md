@@ -24,7 +24,7 @@ Reading every line doesn't scale with agent-written code. Two things do: the **d
 
 ## Arguments
 
-Said in plain words, in any order, after the PR number if there is one. With no number, the verdict is on the local change: the branch under `Delivery: pr`, the working copy under `Delivery: main`.
+Said in plain words, in any order, after the PR number if there is one. With no number, the verdict is on the local change: the branch under `Delivery: pr`, what is staged under `Delivery: main`.
 
 - `verdict`: skip the walkthrough and print the report, verdict line first. For a PR by number, also post or update its one verdict comment.
 - `dry run`: print only, post nothing.

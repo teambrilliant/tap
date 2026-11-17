@@ -45,9 +45,9 @@ Anything that changes after the verdict voids it: get a new one.
 
 **`Delivery: main`**
 
-1. Don't commit on the main branch before the verdict. Get the verdict (step 2). It reads the working copy and runs the policy's required checks itself.
-2. `merge` → commit, ending the message with the verdict line and its reasons, and push to the main branch. Never force-push. If the push is refused because the main branch moved, or a commit hook changed files, take the main branch in the way the repo does and get a new verdict.
-3. `human`, or anything else short of pushed → commit on a new branch, push it, and hand over with `https://github.com/<owner>/<repo>/compare/<default-branch>...<branch>`. Nothing is committed on the main branch.
+1. Stage exactly what you will commit (`git add <paths>`, never `git add -A` over files that aren't yours), and don't commit on the main branch before the verdict. Get the verdict (step 2). It reads what is staged and runs the policy's required checks itself. Files left unstaged or untracked are not judged and must not be committed.
+2. `merge` → commit what is staged and nothing else, ending the message with the verdict line and its reasons, and push to the main branch. Never force-push. If the push is refused because the main branch moved, or a commit hook changed files, take the main branch in the way the repo does and get a new verdict.
+3. `human`, or anything else short of pushed → commit what is staged on a new branch, push it, and hand over with `https://github.com/<owner>/<repo>/compare/<default-branch>...<branch>`. Nothing is committed on the main branch.
 4. Verify (step 4).
 
 `Ceiling: none` → every verdict is `human`: deliver as far as the open PR or the pushed branch, and hand over.
