@@ -2,6 +2,10 @@
 
 Versions are those of the `tap` plugin. Through 3.2.0 this was `dev-skills`; the `tap-skills` changelog through 0.19.0 is at `docs/history/tap-skills-CHANGELOG.md`.
 
+## 4.2.1
+
+- **`Delivery: main`: the verdict reads what is staged**, plus commits not pushed, instead of the whole working copy. `ship` stages exactly what it will commit before asking for the verdict, and commits that and nothing else. Untracked and unstaged files in a checkout (work in progress, local data) no longer count as part of the change; the verdict lists them as left out.
+
 ## 4.2.0
 
 - **New skill: `ship`.** Finished work, however it was made, goes to the main branch as far as the repo's autonomy policy allows: a fresh agent's verdict, then delivery, then verification, or a hand-over with the reason. `execute-plan` ends by running it; its own Ship step is gone.

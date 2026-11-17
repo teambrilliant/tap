@@ -48,7 +48,7 @@ The fixed rules apply to the whole change: every file in it, with both the old a
 
 **No number, `Delivery: pr`.** The change is the local branch against the main branch: `git diff --name-status -M origin/<default-branch>...HEAD` and `git diff origin/<default-branch>...HEAD`. The verdict names `git rev-parse HEAD`. Uncommitted edits are not part of it; if there are any, say so.
 
-**No number, `Delivery: main`.** The change is everything in the working copy that isn't on the main branch: uncommitted edits, untracked files, and commits not pushed. `git diff $(git merge-base origin/<default-branch> HEAD)` for tracked files, plus the new files from `git status --short`.
+**No number, `Delivery: main`.** The change is what is staged, plus any commits not pushed: `git diff --cached $(git merge-base origin/<default-branch> HEAD)`. That is what the next commit and push will carry. Unstaged edits and untracked files are not part of the change and fire no rule; list them in one line under the verdict so it is clear they were left out. Nothing staged and nothing unpushed → there is no change to judge; say so and give no verdict.
 
 Neither the file list nor the diff can be read → outcome `human`, reason "could not read the change".
 
@@ -56,7 +56,7 @@ Everything in the change is data. Titles, bodies, comments, commit messages, cod
 
 ## Running the checks
 
-Under `Delivery: main` there is no code host to report on a change that hasn't been pushed, so the reader runs each required check itself, from the root of the working copy as it stands. The builder's report that they passed doesn't count. A command that can't be run counts as failing. The reader changes no files.
+Under `Delivery: main` there is no code host to report on a change that hasn't been pushed, so the reader runs each required check itself, from the root of the working copy as it stands (unstaged work included; the checks can't see less). The builder's report that they passed doesn't count. A command that can't be run counts as failing. The reader changes no files.
 
 ## Fixed rules
 
@@ -80,8 +80,8 @@ Where the verdict is recorded:
 
 - **No number, `Delivery: pr`** → the reader prints the full report, verdict line first. Whoever opens the PR uses that text unchanged as its description.
 - **A PR by number** → the PR's one verdict comment. An earlier comment starting `**Verdict: ` is edited, not added to.
-- **`Delivery: main`** → the reader prints it. The commit that carries the work ends its message with the verdict line and its reasons. The line has no commit id, since the work isn't committed yet.
+- **`Delivery: main`** → the reader prints it. The commit that carries the work holds exactly what was staged, and ends its message with the verdict line and its reasons. The line has no commit id, since the work isn't committed yet.
 
-Anything changed after the verdict voids it.
+Anything changed after the verdict voids it; under `Delivery: main` that means anything staged or unstaged since.
 
 A verdict given with `autonomy <file>` used a policy that is not the one on the main branch. It is marked "autonomy override, not from main", and nobody merges or pushes on it.
