@@ -38,9 +38,8 @@ Every plan says whether a human has to approve it before work starts. Answer eig
 
 Any yes → `human`, naming each one. All no → `auto`.
 
-- A small additive migration is neither a data model change nor a data migration here: every migration file is new; it only adds a handful of columns or one small table that existing rows and code can ignore; it follows expand-contract; no existing column, relation or row changes. It is declared under `## Declares`, and the merge verdict rates it.
-- The repo's autonomy policy may switch criteria off with its `Plan gate:` line. Read it from the main branch: `git show origin/<default-branch>:tap/autonomy.md` (format in [blast-radius/references/autonomy.md](../blast-radius/references/autonomy.md)).
-- No autonomy policy → every plan is `human`, reason "no autonomy policy".
+- A small additive migration is neither a data model change nor a data migration here: every migration file is new; it only adds a handful of columns or one small table that existing rows and code can ignore; it follows expand-contract; no existing column, relation or row changes. The merge verdict rates it from the diff.
+- No autonomy policy (`git show origin/<default-branch>:tap/autonomy.md` fails; format in [blast-radius/references/autonomy.md](../blast-radius/references/autonomy.md)) → every plan is `human`, reason "no autonomy policy".
 - A plan that touches several repos takes the strictest result across them.
 - When a question can't be answered with confidence, the answer is yes.
 
@@ -81,10 +80,6 @@ If the shape's `Stakes:` is customer-facing — or there's no `Stakes:` line (bu
 - **Where it fails** — failure modes, what the user sees, how we'd notice.
 
 If you can't fill a line, that's a planning gap — resolve it rather than leaving it blank. PoC and internal-only work skip this section.
-
-## Declares
-
-`## Declares` is what the merge verdict checks the finished change against, so it is exact. Name every repo the plan changes, every migration (and whether it is a small additive one), and every change to a contract another repo consumes together with that repo's paired change. A migration or contract change that shows up in the diff without being declared here stops at the merge gate.
 
 ## Principles
 
@@ -142,11 +137,6 @@ Follow the output format below.
 [Link to the shape doc: `tap/shapes/YYYY-MM-DD-name.md`]
 [The shape doc is canonical. Do NOT restate or reinterpret criteria here — qa-test consumes them from the shape doc verbatim.]
 [No shape (tiny/unshaped work)? List criteria here using shaping-work's rules: independently testable, observable behavior, no vague language.]
-
-## Declares
-- **Repos:** [each repo this changes; merge order if more than one]
-- **Migration:** [none | additive: what it adds | other: what it does]
-- **Contract changes:** [none | contract — what changes — paired change: repo, what]
 
 ## Current State
 [What exists now, what's missing, relevant code locations]

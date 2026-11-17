@@ -8,7 +8,7 @@ Tap: skills and panes for teams of agents and people. One repo, four plugins und
 
 | Plugin | Holds | Runs in |
 |---|---|---|
-| `tap` | The 12 core skills. Markdown only: no build, no tests. | Claude Code, pi, Codex |
+| `tap` | The 13 core skills. Markdown only: no build, no tests. | Claude Code, pi, Codex |
 | `tap-labs` | Experimental skills, kept out of core until they earn a place. | same |
 | `tap-pane` | Side pane: plan progress from `tap/plans/` and pinned ★ views. | Claude Code only |
 | `together` | The `list` skill and its pane for shared checklists in `tap/lists/`. | Claude Code only |
@@ -34,9 +34,9 @@ allowed-tools: [...]           # optional
 ---
 ```
 
-Workflow stages: `shape → plan → execute → QA`. `product-thinker` and `strategic-thinker` pair with shaping and planning; `explain` works at any stage; `blast-radius`, `tap-audit`, `tighten-loop` and the `qa-smoke-*` pair are the harness around the pipeline.
+Workflow stages: `shape → plan → execute → QA`. `product-thinker` and `strategic-thinker` pair with shaping and planning; `explain` works at any stage; `blast-radius`, `ship`, `tap-audit`, `tighten-loop` and the `qa-smoke-*` pair are the harness around the pipeline.
 
-The gates: `write-plan` marks each plan `Gate: auto | human`, `blast-radius` ends in a merge verdict, `execute-plan` acts on both, and `tap-audit` drafts the repo's `tap/autonomy.md`. The policy format and the nine fixed rules are written once, in `plugins/tap/skills/blast-radius/references/autonomy.md`; other skills link to it.
+The gates: `write-plan` marks each plan `Gate: auto | human` and `execute-plan` honours it; `ship` delivers any finished work, with or without a plan, on the verdict `blast-radius` gives; `tap-audit` drafts the repo's `tap/autonomy.md`. The gate never reads a plan and needs no other `tap/` file in the repo. The policy format, both deliveries (`pr`, `main`) and the five fixed rules are written once, in `plugins/tap/skills/blast-radius/references/autonomy.md`; other skills link to it.
 
 When editing skills:
 

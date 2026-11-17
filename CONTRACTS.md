@@ -26,18 +26,8 @@ Readers: `tap-pane` (pins views in its pane).
 - Every Phase Check item starts with its command in backticks: `` - [ ] `cmd` → expected ``.
 - `execute-plan` ticks `- [x]` right after each check passes, never before.
 - Under the title: `**Gate:** auto` or `**Gate:** human — <criteria>`.
-- After Acceptance Criteria, a section with exactly these three bullets:
 
-```markdown
-## Declares
-- **Repos:** <each repo; merge order if more than one>
-- **Migration:** none | additive: <what it adds> | other: <what it does>
-- **Contract changes:** none | <contract> — <what changes> — paired change: <repo, what>
-```
-
-- The commit that adds the plan file to the work branch is its approval record. After it, only ticks and `## Decisions` change.
-
-Readers: `tap-pane` (plan card, with evidence glyphs matched against Bash runs); `execute-plan` (reads `**Gate:**`); `blast-radius` (checks the change against `## Declares` and the plan against its approval commit).
+Readers: `tap-pane` (plan card, with evidence glyphs matched against Bash runs); `execute-plan` (reads `**Gate:**`).
 
 ## Lists (`tap/lists/<slug>.md`, from `together:list`)
 

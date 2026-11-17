@@ -1,6 +1,6 @@
 ---
 name: tap-audit
-description: Assess how ready a repository is for autonomous agent work. Use when someone says "audit this repo", "tap audit", "how ready is this codebase", "assess this project", "draft autonomy", "propose an autonomy policy", or when an agent enters an unfamiliar codebase and needs to understand it before working. Scans documentation, MCP servers, CLI tools, permissions, test infrastructure, environments, and process to produce a readiness assessment with actionable leverage points. Outputs to tap/audit.md, and drafts the repo's first tap/autonomy.md as a PR.
+description: Assess how ready a repository is for autonomous agent work. Use when someone says "audit this repo", "tap audit", "how ready is this codebase", "assess this project", "draft autonomy", "propose an autonomy policy", or when an agent enters an unfamiliar codebase and needs to understand it before working. Scans documentation, MCP servers, CLI tools, permissions, test infrastructure, environments, and process to produce a readiness assessment with actionable leverage points. Outputs to tap/audit.md, and drafts the repo's first tap/autonomy.md as a PR, or as an uncommitted file where the repo has no PRs.
 ---
 
 # TAP Audit
@@ -18,7 +18,7 @@ This skill does NOT describe coding conventions — that's CLAUDE.md's job. This
 4. Identify leverage points
 5. Write `tap/audit.md`
 6. Seed `tap/architecture.md`
-7. Propose `tap/autonomy.md` as a PR
+7. Propose `tap/autonomy.md` as a PR, or as an uncommitted file where the repo has no PRs
 8. Present findings (human) or proceed to task (agent)
 
 ### 0. Check Existing Audit
@@ -222,15 +222,15 @@ Write `tap/autonomy.md` in the format from [blast-radius/references/autonomy.md]
 
 - **Ceiling** — the proposed merge ceiling. A ceiling the operator states when asking replaces the proposed one.
 - **Delivery** — `pr` or `main`, from how recent work reached the main branch.
-- **Plan gate** — `all`.
 - **Never auto** — what should never go without a human in this repo and why: changes whose effect a revert doesn't undo and that reach users or other systems (native app code and runtime versions, published packages, billing, infrastructure definitions). Sentences, with known paths as examples. Don't repeat the built-in list from the reference; if nothing else qualifies, say so.
-- **Contracts** — interfaces this repo owns that another repo consumes (an API schema, published types, an event or payload shape): which repo, and why it can't change freely. Name the interface itself, with its file, not the code behind it. What this repo consumes from others is not its contract.
-- Every Never auto and Contracts entry closes the tap for every change that matches it, so list few and keep each narrow. The ceiling and the required checks already cover ordinary risk; an entry is for what they can't. Candidates you considered and left out go in the PR body under "Considered, not listed", with the reason, so the operator can add them.
-- **Required checks** — the exact names of the checks that run on PRs, as the code host reports them.
+- Every Never auto entry closes the tap for every change that matches it, so list few and keep each narrow. The ceiling and the required checks already cover ordinary risk; an entry is for what they can't. Candidates you considered and left out go in the PR body (or your reply, where there is no PR) under "Considered, not listed", with the reason, so the operator can add them.
+- **Required checks** — under `Delivery: pr`, the exact names of the checks that run on PRs, as the code host reports them. Under `Delivery: main`, the commands the push-to-main pipeline runs before it deploys that also run locally with no secrets, each in backticks.
 - **Work list** — the list under `tap/lists/` the repo's work is taken from, if there is one.
 - **Verify after merge** — the command or workflow that shows a merge is healthy, and what success looks like. Only what the merge itself triggers, looked up by the merge commit (`gh run list --workflow <file> --commit <sha>`), never "the latest run" and never a scheduled run: a failing entry here stops every later merge in the repo.
 
 Then open it as a PR on its own branch, with the reason for each entry in the body. Never merges it: the policy takes effect when the operator merges the PR, and they can change anything first. If the repo already has a PR in progress that the operator asked to carry the draft, commit it there instead.
+
+In a repo that doesn't use PRs (`Delivery: main`), leave the file uncommitted in the working copy and give the reasons in your reply. The operator reads it, commits it and pushes it. Never commit or push it yourself.
 
 Where a policy already exists on the main branch, propose changes the same way, as a PR. Never edit it in place and never push it to the main branch.
 
@@ -276,4 +276,4 @@ Then:
 - Does NOT set coding conventions (CLAUDE.md's job)
 - Does NOT measure team dynamics like review turnaround (out of scope here)
 - Does NOT modify any code or config — read-only assessment
-- Drafts the autonomy policy; it takes effect only when the operator merges the PR
+- Drafts the autonomy policy; it takes effect only when the operator merges the PR, or commits and pushes the file themselves

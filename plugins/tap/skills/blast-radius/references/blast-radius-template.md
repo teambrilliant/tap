@@ -2,7 +2,7 @@
 
 Omit any section with nothing in it. Plain sentences, facts verbatim.
 
-The verdict line and its reasons open the report only where the repo has an autonomy policy (see [autonomy.md](autonomy.md)); leave them out otherwise. With a verdict, the whole report is the PR's one verdict comment, and later runs edit that comment instead of adding another.
+The verdict line and its reasons open the report only where the repo has an autonomy policy (see [autonomy.md](autonomy.md)); leave them out otherwise. With a verdict, the whole report becomes the PR description (a PR opened from it) or the PR's one verdict comment (a PR that already exists). Under `Delivery: main` the verdict line ends after the ceiling, with no commit id, and it and its reasons end the commit message.
 
 ```markdown
 **Verdict: [merge / human]** · Risk: [LOW / MEDIUM / HIGH] · Ceiling: [none / low / medium / all] · `[head sha, 7 chars]`
