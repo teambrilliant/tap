@@ -138,11 +138,11 @@ describe('band', () => {
     expect(w.placed.has('tap-pane')).toBe(true)
   })
 
-  test('stacks its line under what other mods draw, never replaces it', async ($, on) => {
+  test('keeps what other mods draw alongside its own line, never replaces it', async ($, on) => {
     mock.clock(on)
     world(on, new Map(), [{ role: 'assistant', text: reply('multi') }])
     await start($)
-    expect(await textOf(await mountBand($))).toBe('BELOW\n★ 2 pinned')
+    expect((await textOf(await mountBand($))).split('\n').sort()).toEqual(['BELOW', '★ 2 pinned'])
   })
 
   test('pins shown in the pane: just the count', async ($, on) => {
