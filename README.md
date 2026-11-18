@@ -76,7 +76,7 @@ Experimental. Installed separately so these stay out of the way: `/plugin instal
 | Plugin | What it does |
 | --- | --- |
 | `tap-pane` | Side pane with the active `tap/plans/` plan as a progress card, each tick checked against the commands that actually ran, plus the session's ★ views. `/tap-pane` opens it. |
-| `together` | Shared checklists in `tap/lists/` for you, Claude and other people. `/together:list` writes them; `/together` shows the pane. |
+| `together` | Shared checklists in `tap/lists/` for you, Claude and other people. `/together:list` writes them; `/together` shows the pane, and `/together <list>` picks a list by slug, part of its name, or path (an `@` mention works, so does a list in another repo's `tap/lists/`). |
 
 [CONTRACTS.md](CONTRACTS.md) lists what skills must emit for the panes to read.
 

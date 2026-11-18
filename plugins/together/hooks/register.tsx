@@ -18,22 +18,72 @@ const frame = atom({ plugin: 'together', key: 'frame' }, 0)
 const hasOpened = atom({ plugin: 'together', key: 'hasOpened' }, false)
 const folded = atom({ plugin: 'together', key: 'folded' }, [])
 
+const dirOf = (path: string) => path.slice(0, path.lastIndexOf('/'))
+const slugOf = (path: string) => path.slice(path.lastIndexOf('/') + 1).replace(/\.md$/u, '')
+
+/** `path` from the session's root unless it starts at `/`, with `.` and `..` folded out. */
 async function absolute($: EngineInterface, path: string): Promise<string> {
-  return path.startsWith('/') ? path : `${await $.session.root()}/${path}`
+  const parts: string[] = []
+  for (const part of (path.startsWith('/') ? path : `${await $.session.root()}/${path}`).split('/')) {
+    if (part === '..') parts.pop()
+    else if (part !== '' && part !== '.') parts.push(part)
+  }
+  return `/${parts.join('/')}`
 }
 
-/** Every `.md` in the repo's `tap/lists/`; a missing folder is no lists. */
-async function loadLists($: EngineInterface) {
-  const dir = await absolute($, LISTS_DIR)
-  const entries = await $.fs.list(dir).catch(() => [])
+/**
+ * Every `.md` in the repo's `tap/lists/`, then in the folder of the active list when that is
+ * another repo's, then in `alsoDir`; a missing folder is no lists.
+ */
+async function loadLists($: EngineInterface, alsoDir?: string) {
+  const active = await read($, activeList)
+  const dirs = new Set([await absolute($, LISTS_DIR), ...(active === null ? [] : [dirOf(active)]), ...(alsoDir === undefined ? [] : [alsoDir])])
   const files: ListFile[] = []
-  for (const entry of [...entries].sort((a, b) => a.name.localeCompare(b.name))) {
-    if (entry.kind !== 'file' || !entry.name.endsWith('.md')) continue
-    const path = `${dir}/${entry.name}`
-    const text = await $.fs.read(path).catch(() => null)
-    if (typeof text === 'string') files.push({ path, text, mtimeMs: entry.mtimeMs })
+  for (const dir of dirs) {
+    const entries = await $.fs.list(dir).catch(() => [])
+    for (const entry of [...entries].sort((a, b) => a.name.localeCompare(b.name))) {
+      if (entry.kind !== 'file' || !entry.name.endsWith('.md')) continue
+      const path = `${dir}/${entry.name}`
+      const text = await $.fs.read(path).catch(() => null)
+      if (typeof text === 'string') files.push({ path, text, mtimeMs: entry.mtimeMs })
+    }
   }
   await update($, lists, () => files)
+}
+
+/** Brings the pane to the front: an open on an id that is behind another tab leaves it there, so that one is closed first. */
+async function showPane($: EngineInterface) {
+  await update($, hasOpened, () => true)
+  const pane = (await $.ui.panes()).find(open => open.id === PANE)
+  if (pane !== undefined && !(pane.isPlaced && pane.isShown)) await $.ui.close({ id: PANE })
+  await $.ui.open({ id: PANE, title: PANE, focus: true })
+}
+
+type Named = { path: string } | { reason: string }
+
+/**
+ * The list `/together <typed>` names. `typed` is an `@` mention, a path into any `tap/lists/`,
+ * a file name or a slug; a slug that is no file may be part of one list's slug or title.
+ */
+async function listNamed($: EngineInterface, typed: string): Promise<Named> {
+  const isPath = typed.includes('/')
+  const named = await absolute($, `${isPath ? typed : `${LISTS_DIR}/${typed}`}${typed.endsWith('.md') ? '' : '.md'}`)
+  await loadLists($, LIST_PATH.test(named) ? dirOf(named) : undefined)
+  const files = await read($, lists)
+  const exact = files.find(file => file.path === named)
+  if (exact !== undefined) {
+    return parseList(exact.text) === undefined ? { reason: `${slugOf(named)}.md has no # title and no - [ ] items` } : { path: named }
+  }
+  await loadLists($)
+  const wanted = typed.toLowerCase()
+  const matches = (await entriesOf($)).filter(
+    entry => !isPath && (slugOf(entry.file.path).toLowerCase().includes(wanted) || entry.list.title.toLowerCase().includes(wanted)),
+  )
+  const [match, ...others] = matches
+  if (match !== undefined && others.length === 0) return { path: match.file.path }
+  if (match !== undefined) return { reason: `"${typed}" matches ${matches.map(entry => slugOf(entry.file.path)).join(', ')}` }
+  const slugs = (await entriesOf($)).map(entry => slugOf(entry.file.path))
+  return { reason: `no list "${typed}" · ${slugs.length === 0 ? `${LISTS_DIR} has none` : `lists: ${slugs.join(', ')}`}` }
 }
 
 /** The session touched a list: it becomes the active one; the first time, the pane opens. */
@@ -88,28 +138,27 @@ export const register: Register = on => {
   }
 
   on('session.start', async ($, e, next) => {
-    await $.command.register({ name: 'together', description: 'Open the together pane · /together <slug> picks a list' })
+    await $.command.register({ name: 'together', description: 'Open the together pane · /together <list> picks one by name or path', argumentHint: '[list]' })
     await loadLists($)
     return next(e)
   })
 
   on('command.run', { command: 'together' }, async ($, e) => {
-    const slug = e.args.trim().replace(/\.md$/u, '')
-    await loadLists($)
-    if (slug !== '') {
-      const path = await absolute($, `${LISTS_DIR}/${slug}.md`)
-      if (!(await read($, lists)).some(file => file.path === path)) {
-        await $.ui.open({ id: PANE, title: PANE })
-        return { text: `together: no ${LISTS_DIR}/${slug}.md` }
-      }
-      await update($, activeList, () => path)
-      await update($, hasOpened, () => true)
-      await $.ui.open({ id: PANE, title: PANE, focus: true })
-      return { text: `together: ${slug}` }
+    const typed = e.args.trim().replace(/^@/u, '').replace(/^(["'])(.*)\1$/u, '$2')
+    if (typed === '') {
+      await loadLists($)
+      await showPane($)
+      return { text: 'pane open' }
     }
-    await update($, hasOpened, () => true)
-    await $.ui.open({ id: PANE, title: PANE, focus: true })
-    return { text: 'together: pane open.' }
+    const named = await listNamed($, typed)
+    if ('reason' in named) {
+      await $.ui.open({ id: PANE, title: PANE })
+      return { text: named.reason }
+    }
+    await update($, activeList, () => named.path)
+    await loadLists($)
+    await showPane($)
+    return { text: slugOf(named.path) }
   })
 
   on('tool.call', { tool: 'Read' }, async ($, e, next) => {
