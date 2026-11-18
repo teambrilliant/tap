@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'claude-code/testing'
 
-import { parsePlan, progressOf, shortName, ticksOf } from '../hooks/plan'
+import { outcomeOf, parsePlan, progressOf, shortName, ticksOf } from '../hooks/plan'
 import { PLANS } from './fixtures/fixtures.gen'
 
 describe('parsePlan', () => {
@@ -41,5 +41,38 @@ describe('parsePlan', () => {
 
   test('text that is not a plan parses to undefined', async () => {
     expect(parsePlan('just prose\n- [ ] a box')).toBeUndefined()
+  })
+})
+
+describe('gate', () => {
+  test('human with its criteria, read above the first section only', async () => {
+    expect(parsePlan(PLANS.gated)?.gate).toEqual({ kind: 'human', criteria: 'user-visible change, new dependency' })
+  })
+
+  test('auto has no criteria', async () => {
+    expect(parsePlan('# T\n\n**Gate:** auto\n\n## Phase 1: p\n- [ ] `x` → ok')?.gate).toEqual({ kind: 'auto', criteria: null })
+  })
+
+  test('a plan without a gate line has none', async () => {
+    expect(parsePlan(PLANS.midrun)?.gate).toBeNull()
+  })
+})
+
+describe('outcomeOf', () => {
+  test('each value, from a ship report, an execute-plan report and a write-plan stop', async () => {
+    expect(outcomeOf('Outcome: merged · abc1234\n**Verdict: merge**')).toBe('merged')
+    expect(outcomeOf('Contract: DONE · Outcome: waiting at merge gate · https://example.test/pr/1')).toBe('waiting at merge gate')
+    expect(outcomeOf('───── ★\n\nOutcome: waiting at plan gate · tap/plans/x.md')).toBe('waiting at plan gate')
+    expect(outcomeOf('**Contract: BLOCKED · Outcome: blocked** · tap/plans/x.md')).toBe('blocked')
+  })
+
+  test('the last one in a reply wins', async () => {
+    expect(outcomeOf('Outcome: waiting at merge gate · a\nlater\nOutcome: merged · b')).toBe('merged')
+  })
+
+  test('a template listing the choices, an unknown value and plain prose are not outcomes', async () => {
+    expect(outcomeOf('Outcome: merged | waiting at merge gate · <link>')).toBeNull()
+    expect(outcomeOf('Outcome: shipped · x')).toBeNull()
+    expect(outcomeOf('the outcome was fine')).toBeNull()
   })
 })

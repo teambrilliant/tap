@@ -1,6 +1,6 @@
 {
   "name": "tap-pane",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "A pane into the work: plan progress from tap/plans and the session's pinned \u2605 views",
   "author": {
     "name": "Team Brilliant",

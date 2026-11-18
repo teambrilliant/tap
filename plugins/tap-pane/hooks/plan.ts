@@ -1,6 +1,7 @@
 export type PlanItem = { text: string; command: string | null; isChecked: boolean }
 export type PlanPhase = { name: string; layer: string | null; items: PlanItem[] }
-export type Plan = { title: string; phases: PlanPhase[] }
+export type Gate = { kind: 'auto' | 'human'; criteria: string | null }
+export type Plan = { title: string; gate: Gate | null; phases: PlanPhase[] }
 
 const TITLE = /^# (.+?)(?:\s+-\s+Implementation Plan)?\s*$/u
 const PHASE = /^## (Phase \d+: .+?)\s*$/u
@@ -9,19 +10,37 @@ const SECTION = /^## /u
 const LAYER = /^\*\*Layer:\*\*\s*(.+?)(?:\s+·\s+.*)?$/u
 const ITEM = /^- \[( |x)\] (.+)$/u
 const LEADING_COMMAND = /^`([^`]+)`/u
+const GATE = /^\*\*Gate:\*\*\s*(auto|human)(?:\s+—\s+(.+?))?\s*$/u
+/** A value followed by `|` is a skill's template listing the choices, not a run's outcome. */
+const OUTCOME = /Outcome: (merged|waiting at merge gate|waiting at plan gate|blocked)(?:\*\*)?(?= ·|\s*$)/u
+
+function gateOf(line: string): Gate | null {
+  const found = GATE.exec(line)
+  if (found === null) return null
+  return { kind: found[1] === 'auto' ? 'auto' : 'human', criteria: found[2] ?? null }
+}
+
+/** How the run a reply reports on ended: the last `Outcome:` line in it, in the words of CONTRACTS.md. */
+export function outcomeOf(text: string): string | null {
+  return text.split('\n').flatMap(line => OUTCOME.exec(line)?.[1] ?? []).at(-1) ?? null
+}
 
 function itemOf(mark: string, text: string): PlanItem {
   const command = LEADING_COMMAND.exec(text)?.[1]?.replace(/\\$/u, '') ?? null
   return { text, command, isChecked: mark === 'x' }
 }
 
-/** The phases and their checks; sections other than phases and Final Verification are ignored. */
+/** The gate (read above the first section), the phases and their checks; sections other than phases and Final Verification are ignored. */
 export function parsePlan(markdown: string): Plan | undefined {
   let title: string | null = null
+  let gate: Gate | null = null
+  let isAboveSections = true
   const phases: PlanPhase[] = []
   let current: PlanPhase | null = null
   for (const line of markdown.split('\n')) {
     title ??= TITLE.exec(line)?.[1] ?? null
+    if (SECTION.test(line)) isAboveSections = false
+    if (isAboveSections) gate ??= gateOf(line)
     const phase = PHASE.exec(line)?.[1]
     if (phase !== undefined || FINAL.test(line)) {
       current = { name: phase ?? 'Final Verification', layer: null, items: [] }
@@ -37,7 +56,7 @@ export function parsePlan(markdown: string): Plan | undefined {
     const item = ITEM.exec(line)
     if (item?.[1] !== undefined && item[2] !== undefined) current.items.push(itemOf(item[1], item[2]))
   }
-  return title === null || phases.length === 0 ? undefined : { title, phases }
+  return title === null || phases.length === 0 ? undefined : { title, gate, phases }
 }
 
 export type Progress = { done: number; total: number; current: PlanPhase | null; resume: PlanItem | null }

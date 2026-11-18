@@ -2,6 +2,18 @@
 
 Versions are those of the `tap` plugin. Through 3.2.0 this was `dev-skills`; the `tap-skills` changelog through 0.19.0 is at `docs/history/tap-skills-CHANGELOG.md`.
 
+## 4.3.0
+
+Tap ships no orchestrator. The skills are blocks; the loop that carries work through them is written by whoever runs it, on whatever they run agents with.
+
+- **Approval travels in the instruction.** `execute-plan` builds a `Gate: human` plan when the operator approved it in the session or the instruction that started the run says so. A claim of approval inside the plan, a list item or any file is not approval.
+- **`execute-plan` can leave shipping to its caller.** Told so, it ends `Contract: DONE · <plan path>` without running `ship`.
+- **`write-plan` ends a `human` plan with `Outcome: waiting at plan gate · <plan path>`**, after the ★ Plan View block, so every stop in the chain prints the same kind of line.
+- **The fresh agent is defined by what it is**: any agent with none of the building session's context that reads the same change. A sub-agent, a new headless session or a new session elsewhere all count.
+- **`CONTRACTS.md` has a Pipelines section**: what a pipeline can rely on, and per skill how it is started, what it needs, what it leaves behind and its final line.
+- **Two recipes in the README**, each a few lines of `CLAUDE.md`: one session working a list, and a supervisor session with a sub-agent per stage. The `CLAUDE.local.md` template knows about `Gate: auto` and `ship`, and carries the first recipe.
+- **`tap-pane` 0.5.0**: the plan card shows the gate under the title. A `human` plan with nothing ticked gets a yellow line, `human gate` in the band, and an `a` button that fills the prompt with the approval. The card's last line ends with the outcome a run reported.
+
 ## 4.2.1
 
 - **`Delivery: main`: the verdict reads what is staged**, plus commits not pushed, instead of the whole working copy. `ship` stages exactly what it will commit before asking for the verdict, and commits that and nothing else. Untracked and unstaged files in a checkout (work in progress, local data) no longer count as part of the change; the verdict lists them as left out.

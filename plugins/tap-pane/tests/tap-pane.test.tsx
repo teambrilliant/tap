@@ -8,7 +8,7 @@ import type { World } from './world'
 
 const reply = (name: string) => REPLIES[name] ?? ''
 const PANE_PROPS: RenderPropsOf['Pane'] = { title: 'tap-pane', isFocused: false, bodyColumns: 72, placement: 'dock', scroll: { offset: 0, bodyRows: 40 }, view: {} }
-const BAND_PROPS: RenderPropsOf['AbovePrompt'] = { hasSurvey: false, isWorking: false, maxRows: 3, bodyColumns: 100, scroll: { offset: 0, bodyRows: 3 }, view: {} }
+const BAND_PROPS: RenderPropsOf['AbovePrompt'] = { hasSurvey: false, isCollapsed: false, isWorking: false, maxRows: 3, bodyColumns: 100, scroll: { offset: 0, bodyRows: 3 }, view: {} }
 const EXPLAIN = (target: string) => `★ Explain · ${target} ─────────\n drawing\n words\n───────────── ★`
 
 async function start($: Engine) {
@@ -138,11 +138,11 @@ describe('band', () => {
     expect(w.placed.has('tap-pane')).toBe(true)
   })
 
-  test('stacks its line under what other mods draw, never replaces it', async ($, on) => {
+  test('keeps what other mods draw alongside its own line, never replaces it', async ($, on) => {
     mock.clock(on)
     world(on, new Map(), [{ role: 'assistant', text: reply('multi') }])
     await start($)
-    expect(await textOf(await mountBand($))).toBe('BELOW\n★ 2 pinned')
+    expect((await textOf(await mountBand($))).split('\n').sort()).toEqual(['BELOW', '★ 2 pinned'])
   })
 
   test('pins shown in the pane: just the count', async ($, on) => {
@@ -275,5 +275,67 @@ describe('plan view', () => {
     isFailing = true
     await $.tool.call({ tool: 'Bash', command: 'pnpm vitest sync-invoices.test.ts' })
     expect(await textOf(pane)).toContain('✗  pnpm vitest sync-invoices.test.ts')
+  })
+
+  test('a human plan with nothing ticked: yellow gate line, [a] fills the approval; both go once a check is ticked', async ($, on) => {
+    mock.clock(on)
+    const files = new Map([['tap/plans/gated.md', PLANS.gated]])
+    const { filled } = world(on, files)
+    on('tool.call', () => ({ result: { type: 'text' }, text: 'ok' }))
+    await start($)
+    await $.tool.call({ tool: 'Read', file_path: 'tap/plans/gated.md' })
+    const pane = await mountPane($)
+    expect(await textOf(pane)).toContain('gate human · user-visible change, new dependency')
+    expect(await bandTextOf(await mountBand($))).toMatch(/^○ Gated fixture · human gate · /)
+    await pane.press({ key: 'approve-plan' })
+    expect(filled).toEqual(['/tap:execute-plan tap/plans/gated.md approved'])
+    files.set('tap/plans/gated.md', PLANS.gated.replace('- [ ]', '- [x]'))
+    await $.tool.call({ tool: 'Edit', file_path: 'tap/plans/gated.md', old_string: '- [ ]', new_string: '- [x]' })
+    expect(await textOf(pane)).toContain('gate human · user-visible change, new dependency')
+    expect(await pane.find({ key: 'approve-plan' })).toBeUndefined()
+    expect(await bandTextOf(await mountBand($))).not.toContain('human gate')
+  })
+
+  test('a plan with no gate line shows no gate line', async ($, on) => {
+    mock.clock(on)
+    world(on, new Map([['tap/plans/billing.md', PLANS.midrun]]))
+    on('tool.call', () => ({ result: { type: 'text' }, text: 'ok' }))
+    await start($)
+    await $.tool.call({ tool: 'Read', file_path: 'tap/plans/billing.md' })
+    expect(await textOf(await mountPane($))).not.toContain('gate ')
+  })
+
+  test('the outcome a reply reported shows on the card until the plan moves on or another plan is tracked', async ($, on) => {
+    mock.clock(on)
+    const files = new Map([
+      ['tap/plans/gated.md', PLANS.gated],
+      ['tap/plans/tick-plan.md', PLANS.tick],
+    ])
+    world(on, files, [{ role: 'assistant', text: '───── ★\n\nOutcome: waiting at plan gate · tap/plans/gated.md' }])
+    on('tool.call', () => ({ result: { type: 'text' }, text: 'ok' }))
+    await start($)
+    await $.tool.call({ tool: 'Read', file_path: 'tap/plans/gated.md' })
+    const pane = await mountPane($)
+    expect(await textOf(pane)).toContain('waiting at plan gate')
+    files.set('tap/plans/gated.md', PLANS.gated.replace('- [ ]', '- [x]'))
+    await $.tool.call({ tool: 'Edit', file_path: 'tap/plans/gated.md', old_string: '- [ ]', new_string: '- [x]' })
+    expect(await textOf(pane)).not.toContain('waiting at plan gate')
+  })
+
+  test('tracking a different plan clears the outcome', async ($, on) => {
+    mock.clock(on)
+    const files = new Map([
+      ['tap/plans/gated.md', PLANS.gated],
+      ['tap/plans/tick-plan.md', PLANS.tick],
+    ])
+    world(on, files, [{ role: 'assistant', text: 'Outcome: merged · abc1234' }])
+    on('tool.call', () => ({ result: { type: 'text' }, text: 'ok' }))
+    await start($)
+    await $.tool.call({ tool: 'Read', file_path: 'tap/plans/gated.md' })
+    const pane = await mountPane($)
+    expect(await textOf(pane)).toContain(' · merged')
+    await $.tool.call({ tool: 'Read', file_path: 'tap/plans/tick-plan.md' })
+    expect(await textOf(pane)).toContain('Tick fixture')
+    expect(await textOf(pane)).not.toContain('merged')
   })
 })

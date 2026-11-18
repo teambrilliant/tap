@@ -116,15 +116,48 @@ Default is **no flag, no expand-contract**. Pick the lightest mechanism(s) that 
 
 The flag system itself (PostHog / LaunchDarkly / static config / DB-driven / none) is discovered from `tap/architecture.md`, which `/tap:tap-audit` seeds during a repo audit. Planners read it; they don't re-derive it on every plan.
 
-## Workflow automation
+## Compose a pipeline
 
-Copy the template into any repo to get the skill chain with routing:
+The skills are blocks. Tap ships no orchestrator: the loop that takes a piece of work through plan, build and ship is yours, written for whatever you run agents with. [CONTRACTS.md](CONTRACTS.md#pipelines) lists what a pipeline can rely on. Two recipes, each a few lines of `CLAUDE.md`:
+
+**One session works a list.**
+
+```markdown
+## Pipeline: work the list
+
+When I say "work the list":
+
+1. Take the first open `@claude` item in the list that `tap/autonomy.md` names under `## Work list` (or the list I name). Mark it `[~]`.
+2. Small and clear → build it. Anything else → `/tap:write-plan`.
+3. The plan is `Gate: human` → give me the item: owner `@me`, a note with the plan's path. Go to 1.
+4. `/tap:execute-plan` (or `/tap:ship` if there was no plan). It builds, verifies and ships.
+5. `Outcome: merged` → the item is ticked with a `→` note. Any other outcome → the item is mine, with the reason and the link.
+6. Go to 1. Stop when no `@claude` item is open.
+
+To run it unattended, start one session per item: `claude -p "work the list, one item"`.
+```
+
+**One session you talk to, a sub-agent per stage.**
+
+```markdown
+## Pipeline: supervisor and workers
+
+You are the supervisor. I talk to you; you don't plan, build or review yourself. Each stage runs in its own sub-agent (for example Fable in this session, `model: opus` for the sub-agents), and you hand me what it returns.
+
+1. Plan → sub-agent: "run `/tap:write-plan` for <the work>". Show me its ★ Plan View unchanged, and the plan path.
+2. `Gate: human` → wait for me. My changes go back to a sub-agent with the plan path. `Gate: auto` → go on.
+3. Build → sub-agent: "run `/tap:execute-plan <plan> approved`, and stop before shipping". Show me its report, Decisions first.
+4. `Contract: DONE` → run `/tap:ship` yourself. It starts the reviewer as another sub-agent.
+5. Tell me the `Outcome:` line and the link. Anything but `merged` → say what I need to do.
+```
+
+The pane pins ★ views only from the session you talk to, which is why step 1 shows the Plan View unchanged. The models are an example; the rule is one sub-agent per stage.
+
+For the single-session flow with routing, copy the template into a repo and add project-specific sections (dev server, database, tools) below the workflow block:
 
 ```bash
 cp "$(claude plugin path tap)/references/CLAUDE.local.template.md" ./CLAUDE.local.md
 ```
-
-Then add project-specific sections (dev server, database, tools) below the workflow block.
 
 ## History
 

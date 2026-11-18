@@ -2,7 +2,7 @@ import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
 import { recordRun } from './evidence'
-import { parsePlan, ticksOf } from './plan'
+import { outcomeOf, parsePlan, ticksOf } from './plan'
 import { PinnedPane, PlanPane, bandText, isOpen } from './ui'
 import type { Evidence } from './ui'
 import { extractViews, hashText, pinViews, shrinkPinned } from './views'
@@ -22,6 +22,7 @@ const planText = atom({ plugin: 'tap-pane', key: 'planText' }, null)
 const baselineTicks = atom({ plugin: 'tap-pane', key: 'baselineTicks' }, [])
 const ledger = atom({ plugin: 'tap-pane', key: 'ledger' }, [])
 const editSeq = atom({ plugin: 'tap-pane', key: 'editSeq' }, 0)
+const outcome = atom({ plugin: 'tap-pane', key: 'outcome' }, null)
 
 async function readOrNull($: EngineInterface, path: string): Promise<string | null> {
   try {
@@ -74,7 +75,10 @@ async function refreshPaneShown($: EngineInterface) {
 
 async function loadPlan($: EngineInterface, path: string) {
   const text = await readOrNull($, path)
-  const isNewPlan = (await read($, activePlan)) !== path
+  const previousPath = await read($, activePlan)
+  const isNewPlan = previousPath !== path
+  // An outcome belongs to the plan as it stood when the run reported; another plan, or more work on this one, ends it.
+  if (previousPath !== null && (isNewPlan || (await read($, planText)) !== text)) await update($, outcome, () => null)
   await update($, activePlan, () => path)
   await update($, planText, () => text)
   if (isNewPlan) {
@@ -104,6 +108,11 @@ async function evidenceOf($: EngineInterface): Promise<Evidence> {
   }
 }
 
+async function noteOutcome($: EngineInterface, replies: readonly string[]) {
+  const ended = replies.flatMap(reply => outcomeOf(reply) ?? []).at(-1)
+  if (ended !== undefined) await update($, outcome, () => ended)
+}
+
 const textOf = (blocks: readonly { type: string; text?: string }[]) =>
   blocks.flatMap(block => (block.type === 'text' && typeof block.text === 'string' ? [block.text] : [])).join('\n')
 
@@ -115,7 +124,9 @@ export const register: Register = on => {
     })
     if (!(await read($, isSeeded))) {
       const messages = await $.session.messages()
-      await pinAll($, messages.filter(message => message.role === 'assistant').flatMap(message => extractViews(message.text)))
+      const replies = messages.filter(message => message.role === 'assistant').map(message => message.text)
+      await pinAll($, replies.flatMap(extractViews))
+      await noteOutcome($, replies)
       await update($, isSeeded, () => true)
     }
     return next(e)
@@ -125,7 +136,9 @@ export const register: Register = on => {
     const stored = await next(e)
     if (e.agentId === undefined && e.message.type === 'assistant') {
       const { content } = e.message
-      await pinAll($, extractViews(typeof content === 'string' ? content : textOf(content)))
+      const reply = typeof content === 'string' ? content : textOf(content)
+      await pinAll($, extractViews(reply))
+      await noteOutcome($, [reply])
     }
     return stored
   }).catch(($, e, next) => next(e))
@@ -220,7 +233,15 @@ export const register: Register = on => {
     const columns = e.props.bodyColumns
     return (
       <Box flexDirection="column" gap={1}>
-        {shownPath !== null && plan !== undefined && PlanPane({ kit, plan, path: shownPath, columns, evidence: await evidenceOf($) })}
+        {shownPath !== null && plan !== undefined && PlanPane({
+            kit,
+            plan,
+            path: shownPath,
+            columns,
+            evidence: await evidenceOf($),
+            outcome: await read($, outcome),
+            actions: { approve: () => void $.prompt.fill({ text: `/tap:execute-plan ${shownPath} approved` }) },
+          })}
         {PinnedPane({
           kit,
           pins: await read($, pins),

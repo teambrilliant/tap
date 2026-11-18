@@ -138,8 +138,29 @@ function summaryParts(summary: EvidenceSummary, done: number, total: number): { 
 }
 
 /** Things-style card: done phases fold to one line with an evidence dot per check, the current phase opens, upcoming phases stay quiet. */
-export function PlanPane({ kit, plan, path, columns, evidence }: { kit: Kit; plan: Plan; path: string; columns: number; evidence: Evidence }) {
-  const { Box, Text } = kit
+export type PlanActions = { approve: () => void }
+
+/** A `human` plan with nothing ticked is the one moment the gate needs the operator; the pane can't know whether they approved. */
+const isAwaitingOperator = (plan: Plan, done: number) => plan.gate?.kind === 'human' && done === 0
+
+export function PlanPane({
+  kit,
+  plan,
+  path,
+  columns,
+  evidence,
+  outcome,
+  actions,
+}: {
+  kit: Kit
+  plan: Plan
+  path: string
+  columns: number
+  evidence: Evidence
+  outcome: string | null
+  actions: PlanActions
+}) {
+  const { Box, Text, Button } = kit
   const progress = progressOf(plan)
   const lastRun = evidence.ledger.at(-1)
   const glyphOf = (item: PlanItem) => glyphFor(item, evidence.ledger, evidence.editSeq, evidence.baselineTicks)
@@ -148,6 +169,7 @@ export function PlanPane({ kit, plan, path, columns, evidence }: { kit: Kit; pla
   const summary = summaryParts(backing, progress.done, progress.total)
   const nameOf = (phase: PlanPhase) => phase.name.replace(/^Phase \d+: /u, '')
   const strip = stripText(stripOf(plan, glyphOf, Math.max(8, columns - 6)))
+  const isAwaiting = isAwaitingOperator(plan, progress.done)
   const borderStyle = backing.failing > 0 ? 'bold' : isProvenDone(plan, glyphOf) ? 'double' : 'round'
   return (
     <Box key="plan-card" flexDirection="column" borderStyle={borderStyle} borderDimColor={borderStyle === 'round'} paddingX={1}>
@@ -159,6 +181,15 @@ export function PlanPane({ kit, plan, path, columns, evidence }: { kit: Kit; pla
           {progress.done}/{progress.total}
         </Text>
       </Box>
+      {plan.gate !== null && (
+        <Box justifyContent="space-between" paddingLeft={2}>
+          <Text color={isAwaiting ? 'yellow' : undefined} dimColor={!isAwaiting} wrap="truncate-end">
+            gate {plan.gate.kind}
+            {plan.gate.criteria === null ? '' : ` · ${plan.gate.criteria}`}
+          </Text>
+          {isAwaiting && <Button key="approve-plan" label="a" plain onPress={actions.approve} />}
+        </Box>
+      )}
       {strip !== '' && (
         <Text wrap="truncate-end">
           {'  '}
@@ -236,6 +267,12 @@ export function PlanPane({ kit, plan, path, columns, evidence }: { kit: Kit; pla
             {' · '}last run {ageOf(evidence.now - lastRun.at)} ago
           </Text>
         )}
+        {outcome !== null && (
+          <Text color={outcome === 'merged' ? undefined : 'yellow'} dimColor={outcome === 'merged'}>
+            {' · '}
+            {outcome}
+          </Text>
+        )}
       </Box>
     </Box>
   )
@@ -260,6 +297,7 @@ export function bandText(plan: Plan | undefined, pins: BandPins, evidence: Evide
     const progress = progressOf(plan)
     const lastRun = evidence.ledger.at(-1)
     parts.push(`${progressGlyph(progress.done, progress.total)} ${plan.title}`)
+    if (isAwaitingOperator(plan, progress.done)) parts.push('human gate')
     if (progress.current !== null) {
       parts.push(progress.current.layer === null ? shortName(progress.current) : `${shortName(progress.current)} ${progress.current.layer}`)
     }
