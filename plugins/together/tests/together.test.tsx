@@ -12,7 +12,7 @@ const SPINNER = /[⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏] Update site to v3/u
 
 const filesOf = (...slugs: string[]) => new Map(slugs.map(slug => [listPath(slug), LISTS[slug] ?? '']))
 const paneProps = (bodyColumns: number): RenderPropsOf['Pane'] => ({ title: 'together', isFocused: false, bodyColumns, placement: 'dock', scroll: { offset: 0, bodyRows: 60 }, view: {} })
-const BAND_PROPS: RenderPropsOf['AbovePrompt'] = { hasSurvey: false, isWorking: false, maxRows: 3, bodyColumns: 100, scroll: { offset: 0, bodyRows: 3 }, view: {} }
+const BAND_PROPS: RenderPropsOf['AbovePrompt'] = { hasSurvey: false, isCollapsed: false, isWorking: false, maxRows: 3, bodyColumns: 100, scroll: { offset: 0, bodyRows: 3 }, view: {} }
 
 async function start($: Engine) {
   await $.session.start({ surface: 'terminal', isInteractive: true, cwd: '/work' })
@@ -62,11 +62,72 @@ describe('hooks', () => {
     mock.clock(on, { now: NOW })
     world(on, filesOf('emma-launch', 'q4-taxes'))
     await start($)
-    expect((await run($, 'q4-taxes')).text).toBe('together: q4-taxes')
-    expect((await run($, 'nope')).text).toBe('together: no tap/lists/nope.md')
+    expect((await run($, 'q4-taxes')).text).toBe('q4-taxes')
+    expect((await run($, 'nope')).text).toBe('no list "nope" · lists: emma-launch, q4-taxes')
     const shown = await textOf(await mountPane($))
     expect(shown).toContain('○ q4 taxes')
     expect(shown).toContain('tap/lists/q4-taxes.md')
+  })
+
+  test('/together takes an @ mention, a path, a file name or a slug', async ($, on) => {
+    mock.clock(on, { now: NOW })
+    world(on, filesOf('emma-launch', 'q4-taxes'))
+    await start($)
+    for (const typed of ['@tap/lists/q4-taxes.md', 'tap/lists/q4-taxes.md', './tap/lists/q4-taxes', '/work/tap/lists/q4-taxes.md', 'q4-taxes.md', '"q4-taxes"']) {
+      await run($, 'emma-launch')
+      expect((await run($, typed)).text).toBe('q4-taxes')
+    }
+    expect(await textOf(await mountPane($))).toContain('○ q4 taxes')
+  })
+
+  test('/together <part of a slug or title> picks the one list it matches; several are named, none switches', async ($, on) => {
+    mock.clock(on, { now: NOW })
+    world(on, filesOf('emma-launch', 'q4-taxes', 'otp-outreach'))
+    await start($)
+    expect((await run($, 'tax')).text).toBe('q4-taxes')
+    expect((await run($, 'OTP')).text).toBe('otp-outreach')
+    expect((await run($, 'a')).text).toBe('"a" matches emma-launch, otp-outreach, q4-taxes')
+    expect(await textOf(await mountPane($))).toContain('tap/lists/otp-outreach.md')
+  })
+
+  test('/together with no lists says so; a file that is no list says why', async ($, on) => {
+    mock.clock(on, { now: NOW })
+    const w = world(on)
+    await start($)
+    expect((await run($, 'nope')).text).toBe('no list "nope" · tap/lists has none')
+    w.files.set(listPath('notes'), 'just prose\n')
+    expect((await run($, 'notes')).text).toBe('notes.md has no # title and no - [ ] items')
+  })
+
+  test('a list in another repo: its path opens it, with the lists beside it; reading one activates it', async ($, on) => {
+    mock.clock(on, { now: NOW })
+    const elsewhere = (slug: string) => `/biz/tap/lists/${slug}.md`
+    world(on, new Map([[listPath('emma-launch'), LISTS['emma-launch'] ?? ''], [elsewhere('q4-taxes'), LISTS['q4-taxes'] ?? ''], [elsewhere('otp-outreach'), LISTS['otp-outreach'] ?? '']]))
+    await start($)
+    expect((await run($, '@../biz/tap/lists/q4-taxes.md')).text).toBe('q4-taxes')
+    const pane = await mountPane($)
+    expect(await textOf(pane)).toContain('/biz/tap/lists/q4-taxes.md')
+    expect((await labelsOf(pane)).some(label => label.includes('emma launch'))).toBe(true)
+    expect((await labelsOf(pane)).some(label => label.includes('otp outreach'))).toBe(true)
+    await complete($)
+    expect(await textOf(pane)).toContain('/biz/tap/lists/q4-taxes.md')
+    await $.tool.call({ tool: 'Read', file_path: elsewhere('otp-outreach') })
+    expect(await textOf(pane)).toContain('/biz/tap/lists/otp-outreach.md')
+    expect((await run($, '../biz/tap/lists/nope.md')).text).toBe('no list "../biz/tap/lists/nope.md" · lists: emma-launch, otp-outreach, q4-taxes')
+  })
+
+  test('/together brings a pane that is behind another tab to the front', async ($, on) => {
+    mock.clock(on, { now: NOW })
+    const w = world(on, filesOf('emma-launch', 'q4-taxes'))
+    await start($)
+    await run($, '')
+    w.hidden.add('together')
+    await run($, 'q4-taxes')
+    expect(w.placed.has('together')).toBe(true)
+    expect(w.hidden.has('together')).toBe(false)
+    w.paneCalls.length = 0
+    await run($, 'emma-launch')
+    expect(w.paneCalls).not.toContain('close')
   })
 })
 

@@ -2,6 +2,10 @@
 
 Versions are those of the `tap` plugin. Through 3.2.0 this was `dev-skills`; the `tap-skills` changelog through 0.19.0 is at `docs/history/tap-skills-CHANGELOG.md`.
 
+## Unreleased
+
+- **`together` 0.5.0**: `/together <list>` takes an `@` mention, a path, a file name, a slug, or part of one list's slug or title; before, anything but the exact slug failed. A list in another repo's `tap/lists/` opens by path or when the session reads it, with the lists beside it. A miss names the lists that exist. The command brings a pane that is behind another tab to the front, and its answer no longer repeats `together:`.
+
 ## 4.3.0
 
 Tap ships no orchestrator. The skills are blocks; the loop that carries work through them is written by whoever runs it, on whatever they run agents with.
