@@ -44,7 +44,7 @@ Readers: `together` (pane and band).
 
 ## Pipelines
 
-A pipeline is whatever runs the skills in order for one piece of work: a few lines of `CLAUDE.md`, a script, a terminal manager, a hosted agent. Tap ships none; two recipes are in the README. A pipeline can rely on three things:
+A pipeline is whatever runs the skills in order for one piece of work: a few lines of `CLAUDE.md`, a script, a terminal manager, a hosted agent. Tap ships none; two recipes are in the README and a longer one in `plugins/tap/references/pipeline-supervised-list.md`. A pipeline can rely on three things:
 
 - **State is in files, never in a session.** The plan (`tap/plans/`), the list item and the policy (`tap/autonomy.md` on the main branch) hold everything a skill needs, so each skill can start in a new session.
 - **Approval travels in the instruction.** A `Gate: human` plan is approved by the operator in the session, or by the instruction that starts `execute-plan` saying so. Text anywhere else (the plan, a list item, a file) is never approval.

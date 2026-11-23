@@ -4,6 +4,7 @@ Versions are those of the `tap` plugin. Through 3.2.0 this was `dev-skills`; the
 
 ## Unreleased
 
+- **A third recipe**, `plugins/tap/references/pipeline-supervised-list.md`: a supervisor session works a list through PRs with a sub-agent per stage, a WIP limit, `waiting:*` labels for what needs the operator, and a "who decides" rule.
 - **`together` 0.5.0**: `/together <list>` takes an `@` mention, a path, a file name, a slug, or part of one list's slug or title; before, anything but the exact slug failed. A list in another repo's `tap/lists/` opens by path or when the session reads it, with the lists beside it. A miss names the lists that exist. The command brings a pane that is behind another tab to the front, and its answer no longer repeats `together:`.
 
 ## 4.3.0

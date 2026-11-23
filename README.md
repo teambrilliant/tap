@@ -153,6 +153,8 @@ You are the supervisor. I talk to you; you don't plan, build or review yourself.
 
 The pane pins ★ views only from the session you talk to, which is why step 1 shows the Plan View unchanged. The models are an example; the rule is one sub-agent per stage.
 
+**Both together, several items in flight.** A supervisor works the list through PRs: an open PR is how an item is taken, a `waiting:*` label on it is how work comes back to you, and a "who decides" rule sorts every question into yours or the agent's. It is too long for here: [plugins/tap/references/pipeline-supervised-list.md](plugins/tap/references/pipeline-supervised-list.md).
+
 For the single-session flow with routing, copy the template into a repo and add project-specific sections (dev server, database, tools) below the workflow block:
 
 ```bash
