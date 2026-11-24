@@ -8,6 +8,7 @@ const TOKEN = process.env["DOSSIER_TOKEN"]
 const API = process.env["DOSSIER_API"] ?? `https://${HOST}/v1`
 const KEYS_DIR = join(homedir(), ".config", "dossier")
 const KEYS_PATH = join(KEYS_DIR, "keys.json")
+const VERSIONS_PATH = join(KEYS_DIR, "versions.json")
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
@@ -32,6 +33,27 @@ function saveKey(siteId: string, key: string): void {
   keys[siteId] = key
   mkdirSync(KEYS_DIR, { recursive: true })
   writeFileSync(KEYS_PATH, JSON.stringify(keys, null, 2))
+}
+
+function loadVersions(): Record<string, number> {
+  if (!existsSync(VERSIONS_PATH)) return {}
+  const parsed: unknown = JSON.parse(readFileSync(VERSIONS_PATH, "utf8"))
+  if (!isRecord(parsed)) return {}
+  const out: Record<string, number> = {}
+  for (const [k, v] of Object.entries(parsed)) if (typeof v === "number") out[k] = v
+  return out
+}
+
+function saveVersion(siteId: string, version: unknown): void {
+  if (typeof version !== "number") return
+  const versions = loadVersions()
+  versions[siteId] = version
+  mkdirSync(KEYS_DIR, { recursive: true })
+  writeFileSync(VERSIONS_PATH, JSON.stringify(versions, null, 2))
+}
+
+function contentAuth(siteId: string): string {
+  return loadKeys()[siteId] ?? requireToken()
 }
 
 function detectNamespace(): string {
@@ -172,7 +194,7 @@ function readDoc(inputPath: string): { html: string; sourceMd: string | undefine
 }
 
 async function uploadAssets(namespace: string, slug: string, inputPath: string): Promise<void> {
-  const key = await keyFor(`${namespace}/${slug}`)
+  const key = contentAuth(`${namespace}/${slug}`)
   const walk = (dir: string): string[] =>
     readdirSync(dir).flatMap((f) => {
       if (f.startsWith(".") || f === "CLAUDE.md") return []
@@ -241,6 +263,7 @@ if (command === "publish" && target !== undefined) {
   const url = str(data, "url")
   const updateKey = str(data, "update_key")
   if (updateKey !== null) saveKey(siteId, updateKey)
+  saveVersion(siteId, data["version"])
   console.log(`published ${url ?? siteId}`)
   if (source) console.log(`  source: ${source.source_url}`)
   const restrictedTo = data["restricted_to"]
@@ -252,33 +275,65 @@ if (command === "publish" && target !== undefined) {
   const inputPath = resolve(rest[0])
   const doc = readDoc(inputPath)
   const source = githubSource(inputPath, doc)
-  const key = await keyFor(target)
-  const putRes = await req("PUT", `/sites/${ns}/${slug}`, key, {
+  const force = rest.includes("--force")
+  const baseVersion = force ? undefined : loadVersions()[target]
+  if (!force && baseVersion === undefined)
+    console.error(
+      `no pulled version of ${target} on this machine — pushing without a conflict check (pull first to enable it)`,
+    )
+  const putRes = await req("PUT", `/sites/${ns}/${slug}`, contentAuth(target), {
     html: doc.html,
     source_md: doc.sourceMd,
     source_url: source?.source_url,
     source_path: source?.source_path,
+    base_version: baseVersion,
   })
+  if (putRes.status === 409) {
+    const conflict = await jsonOf(putRes)
+    const updated = str(conflict, "updated_at")
+    console.error(
+      `${target} changed since you pulled it: you have v${String(baseVersion)}, server has v${String(conflict["current_version"])}` +
+        (updated !== null ? ` (updated ${updated})` : ""),
+    )
+    console.error(`  get theirs:   bun dossier.ts pull ${target} <outdir>   (merge into your copy, then republish)`)
+    console.error(`  overwrite:    bun dossier.ts republish ${target} ${rest[0]} --force`)
+    process.exit(1)
+  }
   if (!putRes.ok) await fail("republish failed", putRes)
   const data = await jsonOf(putRes)
+  saveVersion(target, data["version"])
   console.log(`republished https://${HOST}/${target}/ (v${String(data["version"])})`)
   if (source) console.log(`  source: ${source.source_url}`)
   if (doc.isDir) await uploadAssets(ns, slug, inputPath)
 } else if (command === "pull" && target !== undefined) {
   const token = requireToken()
   const [ns, slug] = splitSiteId(target)
-  const sourceRes = await req("GET", `/sites/${ns}/${slug}/source`, token)
-  if (!sourceRes.ok) await fail("pull failed", sourceRes)
+  const metaRes = await req("GET", `/sites/${ns}/${slug}`, token)
+  if (!metaRes.ok) await fail("pull failed", metaRes)
+  const version = (await jsonOf(metaRes))["version"]
+  if (typeof version !== "number") await fail("pull failed: no version in metadata", metaRes)
+  const htmlRes = await req("GET", `/sites/${ns}/${slug}/versions/${String(version)}/index.html`, token)
+  if (!htmlRes.ok) await fail("pull failed", htmlRes)
+  const sourceRes = await req("GET", `/sites/${ns}/${slug}/source?version=${String(version)}`, token)
+  if (!sourceRes.ok && sourceRes.status !== 404) await fail("pull failed", sourceRes)
   const commentsRes = await req("GET", `/sites/${ns}/${slug}/comments`, token)
   const outDir = rest[0] !== undefined ? resolve(rest[0]) : process.cwd()
   mkdirSync(outDir, { recursive: true })
-  writeFileSync(join(outDir, `${slug}.md`), await sourceRes.text())
-  if (commentsRes.ok)
+  const written = [`${slug}.html`]
+  writeFileSync(join(outDir, `${slug}.html`), await htmlRes.text())
+  if (sourceRes.ok) {
+    writeFileSync(join(outDir, `${slug}.md`), await sourceRes.text())
+    written.push(`${slug}.md`)
+  }
+  if (commentsRes.ok) {
     writeFileSync(
       join(outDir, `${slug}.comments.json`),
       JSON.stringify(await jsonOf(commentsRes), null, 2),
     )
-  console.log(`pulled ${target} → ${join(outDir, `${slug}.md`)} (+ ${slug}.comments.json)`)
+    written.push(`${slug}.comments.json`)
+  }
+  saveVersion(target, version)
+  console.log(`pulled ${target} v${String(version)} → ${outDir} (${written.join(", ")})`)
 } else if (command === "list") {
   const res = await req("GET", target !== undefined ? `/sites?namespace=${target}` : "/sites", requireToken())
   if (!res.ok) await fail("list failed", res)
@@ -339,8 +394,8 @@ if (command === "publish" && target !== undefined) {
 } else {
   console.error(`usage:
   bun dossier.ts publish <file.html|dir> --slug=x [--namespace=x] [--only=me|a@x,...]   # create; never overwrites
-  bun dossier.ts republish <ns/slug> <file.html|dir>                # update; same URL, new version
-  bun dossier.ts pull <ns/slug> [outdir]
+  bun dossier.ts republish <ns/slug> <file.html|dir> [--force]      # update; same URL, new version; 409 if changed since your pull
+  bun dossier.ts pull <ns/slug> [outdir]                             # → <slug>.html + <slug>.md + <slug>.comments.json
   bun dossier.ts list [namespace]
   bun dossier.ts comment <ns/slug> <text>
   bun dossier.ts share <ns/slug> [--password=x]
