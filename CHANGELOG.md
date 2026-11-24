@@ -4,6 +4,7 @@ Versions are those of the `tap` plugin. Through 3.2.0 this was `dev-skills`; the
 
 ## Unreleased
 
+- **`tap-labs` 0.2.0, `dossier-publish`**: two maintainers can work on one doc. `republish` uses any team token (no `update_key` hand-off, no key rotation) and sends the version you last pulled or published; if the doc changed since, it stops with a 409 instead of overwriting (`--force` to overwrite). `pull` also downloads `<slug>.html`, and works for docs with no markdown source. Needs the matching Dossier server change.
 - **A third recipe**, `plugins/tap/references/pipeline-supervised-list.md`: a supervisor session works a list through PRs with a sub-agent per stage, a WIP limit, `waiting:*` labels for what needs the operator, and a "who decides" rule.
 - **`together` 0.5.0**: `/together <list>` takes an `@` mention, a path, a file name, a slug, or part of one list's slug or title; before, anything but the exact slug failed. A list in another repo's `tap/lists/` opens by path or when the session reads it, with the lists beside it. A miss names the lists that exist. The command brings a pane that is behind another tab to the front, and its answer no longer repeats `together:`.
 

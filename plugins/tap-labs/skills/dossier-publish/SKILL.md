@@ -52,6 +52,18 @@ bun scripts/dossier.ts republish <ns>/<slug> <file.html|dir>
 # same URL, new version, comments intact; bundle assets re-uploaded
 ```
 
+Any teammate's `DOSSIER_TOKEN` can republish a doc it can read — no `update_key` hand-off
+needed. Share, restrict and delete still need the key or the owning token.
+
+### Two maintainers, one doc (conflict check)
+
+`publish`, `pull` and `republish` record the doc's version in
+`~/.config/dossier/versions.json` (machine-local). `republish` sends it as
+`base_version`; if someone republished since, the server answers 409 and nothing is
+saved. Then: `pull` into a scratch dir, merge their changes into your copy, `republish`
+again. `--force` skips the check and overwrites. With no recorded version (never pulled
+on this machine) it pushes without the check and says so.
+
 Bundle notes: dotfiles and `CLAUDE.md` are never uploaded; comments attach to the bundle
 as a whole (one thread, shown on every page).
 
@@ -65,13 +77,14 @@ the panel header on the published page.
 
 - Namespace defaults to the current repo name (git remote); `--namespace=scratch` for
   repo-less docs. URL: `https://teambrilliant.dev/<namespace>/<slug>/`.
-- `update_key`s are cached in `~/.config/dossier/keys.json` (machine-local). On a fresh
-  machine the script recovers access automatically by rotating the key with your token.
+- `update_key`s are cached in `~/.config/dossier/keys.json` (machine-local). `republish`
+  uses the cached key, else your token. Share/unshare/delete on a fresh machine recover the
+  key by rotating it with the owning token.
 
 ## Continue work from another machine (the round-trip)
 
 ```bash
-bun scripts/dossier.ts pull <namespace>/<slug> [outdir]   # → <slug>.md + <slug>.comments.json
+bun scripts/dossier.ts pull <namespace>/<slug> [outdir]   # → <slug>.html + <slug>.md + <slug>.comments.json
 # ...edit the md, re-render, then: republish <ns>/<slug> <file.html> — same URL, comments intact
 ```
 
